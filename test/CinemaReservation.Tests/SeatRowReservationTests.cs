@@ -35,6 +35,14 @@ public class SeatRowReservationTests
         FieldInfo field = typeof(SeatRow).GetField("_offset", BindingFlags.Instance | BindingFlags.NonPublic);
         int _offset = (int)field.GetValue(row);
         Assert.Equal(-1, _offset);
+
+        reserved = row.Reserve(1);
+        Assert.Equal(0, reserved);
+        Assert.Equal(0, row.AvailableSeats());
+        // Validate _offset
+        field = typeof(SeatRow).GetField("_offset", BindingFlags.Instance | BindingFlags.NonPublic);
+        _offset = (int)field.GetValue(row);
+        Assert.Equal(-1, _offset);
     }
     [Fact]
     public void ReserveSectionsShouldPassTests()
@@ -94,6 +102,34 @@ public class SeatRowReservationTests
          */
         reserved = row.Reserve(2);
         Assert.Equal(2, reserved);
+        Assert.Equal(0, row.AvailableSeats());
+        // Validate _offset
+        field = typeof(SeatRow).GetField("_offset", BindingFlags.Instance | BindingFlags.NonPublic);
+        _offset = (int)field.GetValue(row);
+        Assert.Equal(-1, _offset);
+
+        reserved = row.Reserve(1);
+        Assert.Equal(0, reserved);
+        Assert.Equal(0, row.AvailableSeats());
+        // Validate _offset
+        field = typeof(SeatRow).GetField("_offset", BindingFlags.Instance | BindingFlags.NonPublic);
+        _offset = (int)field.GetValue(row);
+        Assert.Equal(-1, _offset);
+    }
+    [Fact]
+    public void ReserveBiggerThanARowShouldPassTests()
+    {
+        SeatRow row = new SeatRow(10);
+        int reserved = row.Reserve(11);
+        Assert.Equal(10, reserved);
+        Assert.Equal(0, row.AvailableSeats());
+        // Validate _offset
+        FieldInfo field = typeof(SeatRow).GetField("_offset", BindingFlags.Instance | BindingFlags.NonPublic);
+        int _offset = (int)field.GetValue(row);
+        Assert.Equal(-1, _offset);
+
+        reserved = row.Reserve(1);
+        Assert.Equal(0, reserved);
         Assert.Equal(0, row.AvailableSeats());
         // Validate _offset
         field = typeof(SeatRow).GetField("_offset", BindingFlags.Instance | BindingFlags.NonPublic);
