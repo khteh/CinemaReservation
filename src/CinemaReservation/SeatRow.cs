@@ -6,7 +6,7 @@ public class SeatRow
     /// <summary>
     /// < 0 : This row is full
     /// The center-most seat to reserve from this row.
-    /// Adjsuted after every successful reservation.
+    /// Adjusted after every successful reservation.
     /// </summary>
     private int _offset = 0;
     private List<char> _seats;
