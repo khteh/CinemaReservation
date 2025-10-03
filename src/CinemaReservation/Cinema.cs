@@ -25,7 +25,7 @@ public class Cinema
         if (!_seatMap.ContainsKey(title_lower))
             throw new InvalidOperationException($"Invalid movie title! {title}");
         if (string.IsNullOrEmpty(seat)) throw new ArgumentNullException(nameof(seat));
-        if (tickets < 0) throw new ArgumentOutOfRangeException(nameof(tickets));
+        if (tickets <= 0) throw new ArgumentOutOfRangeException(nameof(tickets));
         return _seatMap[title_lower].Reserve(tickets, seat);
     }
 }

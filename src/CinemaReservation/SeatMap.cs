@@ -5,6 +5,7 @@ public class SeatMap
     private readonly int _rows, _seats; // _rows: [0, 25], _cols: [1, 50]
     private readonly string _title;
     private int _seatsAvailable;
+    private char[,] _seatMap;
     public string Title { get => _title; }
     public int Rows { get => _rows; }
     public int Seats { get => _seats; }
@@ -18,9 +19,26 @@ public class SeatMap
         _rows = rows;
         _seats = seats;
         _seatsAvailable = _rows * _seats;
+        _seatMap = new char[_rows, _seats]; // All elements will be 0
     }
     public bool Reserve(int tickets, string seat)
     {
+#if false
+        if (tickets > _seatsAvailable)
+        {
+            WriteLine($"Not enough seats available!");
+            return false;
+        }
+        if (string.IsNullOrEmpty(seat))
+        {
+            /* Default seats reservation.
+             * Back row, middle seats.
+             */
+            for (int i = _rows - 1; i >= 0; i--)
+            {
+            }
+        }
+#endif
         throw new NotImplementedException();
     }
 }
