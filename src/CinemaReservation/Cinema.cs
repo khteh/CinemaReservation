@@ -15,7 +15,7 @@ public class Cinema
         if (seats < 0) throw new ArgumentOutOfRangeException(nameof(seats));
         if (!_seatMap.ContainsKey(title))
             _seatMap.Add(title, new SeatMap(title, rows, seats));
-        return _seatMap[title].SeatsAvailable;
+        return _seatMap[title].SeatsAvailable();
     }
     public bool Reserve(string title, int tickets, string seat)
     {

@@ -9,14 +9,14 @@ public class SeatRow
     /// Adjusted after every successful reservation.
     /// </summary>
     private int _offset = 0;
-    private List<char> _seats;
+    public List<char> Seats { get; private set; }
     public SeatRow(int seats)
     {
-        _seats = new List<char>();
+        Seats = new List<char>();
         for (int i = 0; i < seats; i++)
-            _seats.Add(' ');
+            Seats.Add(' ');
     }
-    public int AvailableSeats() => _offset >= 0 ? _seats.Where(s => s.Equals(' ')).Count() : 0;
+    public int AvailableSeats() => _offset >= 0 ? Seats.Where(s => s.Equals(' ')).Count() : 0;
     /// <summary>
     /// Reserve the number of tickets in this seat row
     /// </summary>
@@ -52,12 +52,40 @@ public class SeatRow
         int offset = Offset(tickets);
         int i = offset;
         for (; i < offset + _tickets; i++)
-            _seats[i] = 'x';
+            Seats[i] = 'x';
         _offset = offset + _tickets;
-        if (_offset == _seats.Count || _seats[_offset] == 'x')
+        if (_offset == Seats.Count || Seats[_offset] == 'x')
             // Check and reset _offset to the right-most empty seat
-            for (--_offset; _offset >= 0 && _seats[_offset] == 'x'; _offset--) ;
+            for (--_offset; _offset >= 0 && Seats[_offset] == 'x'; _offset--) ;
         return _tickets;
+    }
+    /// <summary>
+    /// Reserve the number of tickets in this seat row starting from the specific seat
+    /// </summary>
+    /// <param name="seat"></param>
+    /// <param name="tickets"></param>
+    /// <returns>#tickets actually reserved in this row</returns>
+    public int Reserve(int seat, int tickets)
+    {
+        /*
+        0 1 2 3 4 5 6 7 8 9
+              x x x x		<= (10 - 4) / 2 = 3
+
+        0 1 2 3 4 5 6 7 8 9
+              x x x			<= (10 - 3) / 2 = 3.5 (floor)
+
+        0 1 2 3 4 5 6 7 8 9
+                x x			<= (10 - 2) / 2 = 4
+
+        0 1 2 3 4 5 6 7 8 9 10
+              x x x x		<= (11 - 4) / 2 = 3.5 (floor)
+
+        0 1 2 3 4 5 6 7 8 9 10
+                x x x		<= (11 - 3) / 2 = 4
+
+        0 1 2 3 4 5 6 7 8 9 10
+                x x			<= (11 - 2) / 2 = 4.5 (floor)     
+        */
     }
     /// <summary>
     /// Calculate the center-most offset of the beginning of seat assignment for the number of required tickets in this row
@@ -119,7 +147,7 @@ public class SeatRow
         {
             int i = _offset;
             // Look for empty seats from _offset to the left
-            for (; i >= 0 && _seats[i] == ' '; i--) ;
+            for (; i >= 0 && Seats[i] == ' '; i--) ;
             if (i < 0)
                 i = 0;
             size = _offset - i + 1;
@@ -135,7 +163,7 @@ public class SeatRow
     {
         int i = _offset;
         // Check if there is any empty seat to the left of _offset
-        for (; i < _seats.Count && _seats[i] == ' '; i++) ;
+        for (; i < Seats.Count && Seats[i] == ' '; i++) ;
         return i - _offset; // size = 1 means there is no empty seat to the left of _offset
     }
 }
