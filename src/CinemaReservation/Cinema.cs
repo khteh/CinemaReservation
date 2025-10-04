@@ -1,4 +1,5 @@
-﻿namespace CinemaReservation;
+﻿using static System.Console;
+namespace CinemaReservation;
 
 public class Cinema
 {
@@ -24,8 +25,12 @@ public class Cinema
         seat = seat.Trim().ToLower();
         if (!_seatMap.ContainsKey(title_lower))
             throw new InvalidOperationException($"Invalid movie title! {title}");
-        if (string.IsNullOrEmpty(seat)) throw new ArgumentNullException(nameof(seat));
         if (tickets <= 0) throw new ArgumentOutOfRangeException(nameof(tickets));
+        if (tickets > _seatMap[title_lower].SeatsAvailable())
+        {
+            WriteLine($"Not enough seats available!");
+            return null;
+        }
         return _seatMap[title_lower].Reserve(tickets, seat);
     }
 }

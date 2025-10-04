@@ -11,7 +11,6 @@ public class SeatMap : IDisposable
     private List<SeatRow> _rows;
     private Dictionary<string, Reservation> _reservations;
     public string Title { get => _title; }
-    public int RowCount { get => _rows.Count; }
     public SeatMap(string title, int rows, int seats)
     {
         if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
@@ -92,8 +91,8 @@ public class SeatMap : IDisposable
             int _row = matches[0].Groups[1].Value.ToLower()[0] - 'a';
             if (Int32.TryParse(matches[0].Groups[2].Value, out int _col))
             {
-                WriteLine($"{nameof(ParseSeat)} row: {_row}/{RowCount}, col: {_col}/{int.Min(_seatsPerRow, 50)}");
-                if (_row >= 0 && _row < int.Min(RowCount, 26) && _col >= 1 && _col <= int.Min(_seatsPerRow, 50))
+                WriteLine($"{nameof(ParseSeat)} row: {_row}/{_rows.Count}, col: {_col}/{int.Min(_seatsPerRow, 50)}");
+                if (_row >= 0 && _row < int.Min(_rows.Count, 26) && _col >= 1 && _col <= int.Min(_seatsPerRow, 50))
                 {
                     row = _row;
                     col = _col;
