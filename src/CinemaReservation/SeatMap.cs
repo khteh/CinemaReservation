@@ -11,7 +11,7 @@ public class SeatMap : IDisposable
     private List<SeatRow> _rows;
     private Dictionary<string, Reservation> _reservations;
     public string Title { get => _title; }
-    public SeatMap(string title, int rows, int seats)
+    public SeatMap(string title, int rows = 26, int seats = 50)
     {
         if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
         if (rows < 1 || rows > 26) throw new ArgumentOutOfRangeException(nameof(rows));
@@ -101,7 +101,17 @@ public class SeatMap : IDisposable
         }
         return (row, col);
     }
-
+    public void ShowMap(string id)
+    {
+        if (string.IsNullOrEmpty(id) || !_reservations.ContainsKey(id)) throw new ArgumentOutOfRangeException(nameof(id));
+        WriteLine("\t\t{_title}");
+        List<List<char>> rows = new List<List<char>>();
+        for (int i = _rows.Count - 1; i >= 0; i--)
+        {
+            List<char> row = new List<char>();
+            for (int j = 0; j < _rows[i].Seats.Count; j++)
+        }
+    }
     public void Dispose()
     {
         _rows.Clear();
