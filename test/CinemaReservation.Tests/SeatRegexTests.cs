@@ -10,7 +10,7 @@ public class SeatRegexTests
     [Theory]
     [InlineData(1, "A05", 0, 5)]
     [InlineData(0, "AB05", -1, -1)]
-    [InlineData(0, "A123", 0, -1)]
+    [InlineData(0, "A123", -1, -1)]
     [InlineData(0, "AB123", -1, -1)]
     public void SeatStringValidationTests(int expected, string seat, int expectedRow, int expectedCol)
     {
@@ -28,10 +28,10 @@ public class SeatRegexTests
             Assert.Equal(3, matches[0].Groups.Count);
             Assert.Equal(1, matches[0].Groups[1].Value.Length);
             row = matches[0].Groups[1].Value.ToLower()[0] - 'a';
-            Assert.Equal(expectedRow, row);
             Assert.True(Int32.TryParse(matches[0].Groups[2].Value, out col));
-            Assert.Equal(expectedCol, col);
         }
+        Assert.Equal(expectedRow, row);
+        Assert.Equal(expectedCol, col);
     }
     [Theory]
     [InlineData("A05", 0, 5)]
@@ -62,8 +62,8 @@ public class SeatRegexTests
                 row = _row;
                 col = _col;
             }
-            Assert.Equal(expectedRow, row);
-            Assert.Equal(expectedSeat, col);
         }
+        Assert.Equal(expectedRow, row);
+        Assert.Equal(expectedSeat, col);
     }
 }
