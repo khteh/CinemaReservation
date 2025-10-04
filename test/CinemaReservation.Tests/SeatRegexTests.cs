@@ -14,7 +14,7 @@ public class SeatRegexTests
     [InlineData(0, "AB123", -1, -1)]
     public void SeatStringValidationTests(int expected, string seat, int expectedRow, int expectedCol)
     {
-        int row = -1, col = -1; // _rows: [0, 25], _cols: [1, min(_seatMap._seats , 50)]
+        int row = -1, col = -1; // _rows: [0, 25], _cols: [1, min(_seatMap._seats, 50)]
         seat = seat.Trim().ToLower();
         MatchCollection matches = _regex.Matches(seat);
         _output.WriteLine($"{matches.Count} matches");
@@ -42,7 +42,7 @@ public class SeatRegexTests
     [InlineData("E11", -1, -1)] // col should be <= 10
     public void RowSeatValidationTests(string seat, int expectedRow, int expectedSeat)
     {
-        int row = -1, col = -1; // _rows: [0, 25], _cols: [1, min(_seatMap._seats , 50)]
+        int row = -1, col = -1; // _rows: [0, 25], _cols: [1, min(_seatMap._seats, 50)]
         MatchCollection matches = _regex.Matches(seat);
         _output.WriteLine($"{matches.Count} matches");
         Assert.Single(matches);
