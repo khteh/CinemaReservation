@@ -21,8 +21,8 @@ public class SeatRow
     /// Reserve available seats out of the requested number of tickets in this seat row.
     /// </summary>
     /// <param name="tickets"></param>
-    /// <returns>#tickets actually reserved in this row</returns>
-    public int Reserve(int tickets)
+    /// <returns>List of seats successfully reserved out of the requested number of tickets in this seat row.</returns>
+    public List<int> Reserve(int tickets)
     {
         /*
         0 1 2 3 4 5 6 7 8 9
@@ -43,29 +43,33 @@ public class SeatRow
         0 1 2 3 4 5 6 7 8 9 10
                 x x			<= (11 - 2) / 2 = 4.5 (floor)     
         */
+        List<int> seats = new List<int>();
         if (AvailableSeats() == 0)
         {
             WriteLine($"{nameof(Reserve)}: No available seats in this row!");
-            return 0;
+            return seats;
         }
         int _tickets = Tickets(tickets);
         int offset = Offset(tickets);
         int i = offset;
         for (; i < offset + _tickets; i++)
+        {
             Seats[i] = 'x';
+            seats.Add(i);
+        }
         _offset = offset + _tickets;
         if (_offset == Seats.Count || Seats[_offset] == 'x')
             // Check and reset _offset to the right-most empty seat
             for (--_offset; _offset >= 0 && Seats[_offset] == 'x'; _offset--) ;
-        return _tickets;
+        return seats;
     }
     /// <summary>
     /// Reserve available seats out of the requested number of tickets from the requested seat position to the right of the row.
     /// </summary>
     /// <param name="seat">[0, Seats.Count - 1]</param>
     /// <param name="tickets"></param>
-    /// <returns>#tickets actually reserved in this row</returns>
-    public int Reserve(int seat, int tickets)
+    /// <returns>List of seats successfully reserved out of the requested number of tickets in this seat row.</returns>
+    public List<int> Reserve(int seat, int tickets)
     {
         /*
         0 1 2 3 4 5 6 7 8 9
@@ -86,24 +90,25 @@ public class SeatRow
         0 1 2 3 4 5 6 7 8 9 10
                 x x			<= (11 - 2) / 2 = 4.5 (floor)     
         */
+        List<int> seats = new List<int>();
         if (AvailableSeats() == 0)
         {
             WriteLine($"{nameof(Reserve)}: No available seats in this row!");
-            return 0;
+            return seats;
         }
         int i = seat, allocated = 0;
-        for (; i < Seats.Count && allocated < tickets; i++)
+        for (; i < Seats.Count && seats.Count < tickets; i++)
             if (Seats[i] == ' ')
             {
                 Seats[i] = 'x';
-                allocated++;
+                seats.Add(i);
             }
         for (; i < Seats.Count && Seats[i] == 'x'; i++) ;
         _offset = i;
         if (_offset == Seats.Count || Seats[_offset] == 'x')
             // Check and reset _offset to the right-most empty seat
             for (--_offset; _offset >= 0 && Seats[_offset] == 'x'; _offset--) ;
-        return allocated;
+        return seats;
     }
     /// <summary>
     /// Calculate the center-most offset of the beginning of seat assignment for the number of required tickets in this row

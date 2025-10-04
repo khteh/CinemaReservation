@@ -20,26 +20,25 @@ public class SeatMap
         for (int i = 0; i < rows; i++)
             _rows.Add(new SeatRow(seats));
     }
-    public int SeatsAvailable() => _rows.Sum(r => r.AvailableSeats());
-    public bool Reserve(int tickets, string seat)
+    public int SeatsAvailable() => _rows.AsParallel().Sum(r => r.AvailableSeats());
+    public string Reserve(int tickets, string seat, out Dictionary<int, List<int>> seats)
     {
-#if false
-        if (tickets > _seatsAvailable)
+        seats = null;
+        if (tickets > SeatsAvailable())
         {
             WriteLine($"Not enough seats available!");
-            return false;
+            return null;
         }
         if (string.IsNullOrEmpty(seat))
         {
             /* Default seats reservation.
              * Back row, middle seats.
              */
-            for (int i = _rows - 1; i >= 0; i--)
+            for (int i = 0; i < _rows.Count && tickets > 0; i++)
             {
             }
         }
-#endif
-        throw new NotImplementedException();
+        return null;
     }
     private (int, int) ParseSeat(string seat)
     {
