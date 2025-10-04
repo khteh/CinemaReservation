@@ -1,7 +1,7 @@
 ﻿using static System.Console;
 namespace CinemaReservation;
 
-public class SeatRow
+public class SeatRow : IDisposable
 {
     /// <summary>
     /// < 0 : This row is full
@@ -154,8 +154,10 @@ public class SeatRow
              */
             if (size == tickets)
                 return _offset;
-            int _tickets = int.Min(_offset + 1, tickets);
-            return _tickets - tickets;
+            /* Available seats: [0, _offset]
+             * Return the offset which could accomodate the min(_offset + 1, tickets)
+             */
+            return tickets >= _offset + 1 ? 0 : (_offset + 1) - tickets;
         }
     }
     /// <summary>
@@ -188,5 +190,11 @@ public class SeatRow
         // Check if there is any empty seat to the left of _offset
         for (; i < Seats.Count && Seats[i] == ' '; i++) ;
         return i - _offset; // size = 1 means there is no empty seat to the left of _offset
+    }
+
+    public void Dispose()
+    {
+        Seats.Clear();
+        GC.SuppressFinalize(this);
     }
 }

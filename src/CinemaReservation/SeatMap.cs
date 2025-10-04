@@ -2,13 +2,15 @@
 using static System.Console;
 namespace CinemaReservation;
 
-public class SeatMap
+public class SeatMap : IDisposable
 {
     private readonly Regex _regex = new Regex(@"^([a-zA-Z]{1})([0-9]{2})$");
     private readonly string _title;
+    private int _seatsPerRow;
+    private int _runningCount = 0;
     private List<SeatRow> _rows;
+    private Dictionary<string, Reservation> _reservations;
     public string Title { get => _title; }
-    public int Seats { get => _rows.Any() ? _rows.First().Seats.Count : 0; }
     public int RowCount { get => _rows.Count; }
     public SeatMap(string title, int rows, int seats)
     {
@@ -17,17 +19,20 @@ public class SeatMap
         if (seats < 1 || seats > 50) throw new ArgumentOutOfRangeException(nameof(seats));
         _title = title;
         _rows = new List<SeatRow>(); // _rows: [0, 25], _cols: [1, 50]
+        _reservations = new Dictionary<string, Reservation>();
         for (int i = 0; i < rows; i++)
             _rows.Add(new SeatRow(seats));
+        _seatsPerRow = _rows.Any() ? _rows.First().Seats.Count : 0;
     }
     public int SeatsAvailable() => _rows.AsParallel().Sum(r => r.AvailableSeats());
-    public string Reserve(int tickets, string seat, out Dictionary<int, List<int>> seats)
+    public Reservation Reserve(int tickets, string seat)
     {
-        seats = null;
+        Reservation reservation = null;
+        Dictionary<int, List<int>> seats = new Dictionary<int, List<int>>();
         if (tickets > SeatsAvailable())
         {
             WriteLine($"Not enough seats available!");
-            return null;
+            return reservation;
         }
         if (string.IsNullOrEmpty(seat))
         {
@@ -35,14 +40,27 @@ public class SeatMap
              * Back row, middle seats.
              */
             for (int i = 0; i < _rows.Count && tickets > 0; i++)
-            {
-            }
+                if (_rows[i].AvailableSeats() > 0)
+                {
+                    List<int> reserved = _rows[i].Reserve(tickets);
+                    if (reserved.Any())
+                    {
+                        tickets -= reserved.Count;
+                        seats[i] = reserved;
+                    }
+                }
+            if (tickets > 0)
+                throw new InvalidOperationException($"{nameof(Reserve)} Failed to reserve {tickets} remaining seats!");
+            string id = $"GIC{_runningCount.ToString("D4")}";
+            reservation = new Reservation(id, seats);
+            _reservations.Add(id, reservation);
+            Interlocked.Increment(ref _runningCount);
         }
-        return null;
+        return reservation;
     }
     private (int, int) ParseSeat(string seat)
     {
-        int row = -1, col = -1; // _rows: [0, 25], _cols: [1, min(_seatMap._seats , 50)]
+        int row = -1, col = -1; // _rows: [0, 25], _cols: [1, min(_seatMap._seatsPerRow , 50)]
         MatchCollection matches = _regex.Matches(seat);
         WriteLine($"{matches.Count} matches");
         if (matches.Count > 0)
@@ -54,8 +72,8 @@ public class SeatMap
             int _row = matches[0].Groups[1].Value.ToLower()[0] - 'a';
             if (Int32.TryParse(matches[0].Groups[2].Value, out int _col))
             {
-                WriteLine($"{nameof(ParseSeat)} row: {_row}/{RowCount}, col: {_col}/{int.Min(Seats, 50)}");
-                if (_row >= 0 && _row < int.Min(RowCount, 26) && _col >= 1 && _col <= int.Min(Seats, 50))
+                WriteLine($"{nameof(ParseSeat)} row: {_row}/{RowCount}, col: {_col}/{int.Min(_seatsPerRow, 50)}");
+                if (_row >= 0 && _row < int.Min(RowCount, 26) && _col >= 1 && _col <= int.Min(_seatsPerRow, 50))
                 {
                     row = _row;
                     col = _col;
@@ -63,5 +81,12 @@ public class SeatMap
             }
         }
         return (row, col);
+    }
+
+    public void Dispose()
+    {
+        _rows.Clear();
+        _reservations.Clear();
+        GC.SuppressFinalize(this);
     }
 }

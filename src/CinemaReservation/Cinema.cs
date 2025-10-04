@@ -17,7 +17,7 @@ public class Cinema
             _seatMap.Add(title, new SeatMap(title, rows, seats));
         return _seatMap[title].SeatsAvailable();
     }
-    public string Reserve(string title, int tickets, string seat, out Dictionary<int, List<int>> seats)
+    public Reservation Reserve(string title, int tickets, string seat)
     {
         title = title.Trim();
         string title_lower = title.ToLower();
@@ -26,6 +26,6 @@ public class Cinema
             throw new InvalidOperationException($"Invalid movie title! {title}");
         if (string.IsNullOrEmpty(seat)) throw new ArgumentNullException(nameof(seat));
         if (tickets <= 0) throw new ArgumentOutOfRangeException(nameof(tickets));
-        return _seatMap[title_lower].Reserve(tickets, seat, out seats);
+        return _seatMap[title_lower].Reserve(tickets, seat);
     }
 }

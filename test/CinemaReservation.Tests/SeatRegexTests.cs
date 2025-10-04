@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 namespace CinemaReservation.Tests;
 
@@ -6,6 +7,7 @@ public class SeatRegexTests
     private readonly ITestOutputHelper _output;
     private readonly Regex _regex = new Regex(@"^([a-zA-Z]{1})([0-9]{2})$");
     private readonly SeatMap _seatMap = new SeatMap("Test Movie", 10, 10);
+    private FieldInfo _field = typeof(SeatMap).GetField("_seatsPerRow", BindingFlags.Instance | BindingFlags.NonPublic);
     public SeatRegexTests(ITestOutputHelper output) => _output = output;
     [Theory]
     [InlineData(1, "A05", 0, 5)]
@@ -56,8 +58,9 @@ public class SeatRegexTests
             Assert.Equal(1, matches[0].Groups[1].Value.Length);
             int _row = matches[0].Groups[1].Value.ToLower()[0] - 'a';
             Assert.True(Int32.TryParse(matches[0].Groups[2].Value, out int _col));
-            _output.WriteLine($"{nameof(RowSeatValidationTests)} row: {_row}/{_seatMap.RowCount}, col: {_col}/{int.Min(_seatMap.Seats, 50)}");
-            if (_row >= 0 && _row < int.Min(_seatMap.RowCount, 26) && _col >= 1 && _col <= int.Min(_seatMap.Seats, 50))
+            int seatsPerRow = (int)_field.GetValue(_seatMap);
+            _output.WriteLine($"{nameof(RowSeatValidationTests)} row: {_row}/{_seatMap.RowCount}, col: {_col}/{int.Min(seatsPerRow, 50)}");
+            if (_row >= 0 && _row < int.Min(_seatMap.RowCount, 26) && _col >= 1 && _col <= int.Min(seatsPerRow, 50))
             {
                 row = _row;
                 col = _col;
