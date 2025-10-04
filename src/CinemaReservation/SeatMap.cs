@@ -29,38 +29,58 @@ public class SeatMap : IDisposable
     {
         Reservation reservation = null;
         Dictionary<int, List<int>> seats = new Dictionary<int, List<int>>();
+        if (tickets <= 0) throw new ArgumentOutOfRangeException(nameof(tickets));
         if (tickets > SeatsAvailable())
         {
             WriteLine($"Not enough seats available!");
             return reservation;
         }
-        if (string.IsNullOrEmpty(seat))
+        int row = -1, col = -1;
+        if (!string.IsNullOrEmpty(seat))
         {
-            /* Default seats reservation.
-             * Back row, middle seats.
-             */
-            for (int i = 0; i < _rows.Count && tickets > 0; i++)
-                if (_rows[i].AvailableSeats() > 0)
-                {
-                    List<int> reserved = _rows[i].Reserve(tickets);
-                    if (reserved.Any())
-                    {
-                        tickets -= reserved.Count;
-                        seats[i] = reserved;
-                    }
-                }
-            if (tickets > 0)
-                throw new InvalidOperationException($"{nameof(Reserve)} Failed to reserve {tickets} remaining seats!");
-            string id = $"GIC{_runningCount.ToString("D4")}";
-            reservation = new Reservation(id, seats);
-            _reservations.Add(id, reservation);
-            Interlocked.Increment(ref _runningCount);
+            (row, col) = ParseSeat(seat);
+            if (row < 0 || col < 1)
+                throw new ArgumentOutOfRangeException(nameof(seat));
+            WriteLine($"{nameof(Reserve)} Reserving {tickets} seats from ({row}, {col - 1})");
+            List<int> reserved = _rows[row].Reserve(col - 1, tickets);
+            if (reserved.Any())
+            {
+                tickets -= reserved.Count;
+                seats[row] = reserved;
+            }
+            row++;
         }
+        else
+            row = 0;
+        /* Default seats reservation.
+         * Back row, middle seats.
+         */
+        for (int i = row; i < _rows.Count && tickets > 0; i++)
+            if (_rows[i].AvailableSeats() > 0)
+            {
+                List<int> reserved = _rows[i].Reserve(tickets);
+                if (reserved.Any())
+                {
+                    tickets -= reserved.Count;
+                    seats[i] = reserved;
+                }
+            }
+        if (tickets > 0)
+            throw new InvalidOperationException($"{nameof(Reserve)} Failed to reserve {tickets} remaining seats!");
+        string id = $"GIC{_runningCount.ToString("D4")}";
+        reservation = new Reservation(id, seats);
+        _reservations.Add(id, reservation);
+        Interlocked.Increment(ref _runningCount);
         return reservation;
     }
+    /// <summary>
+    /// Parse the input seat request string to it's corresponding row: [0, 25], cols: [1, min(_seatsPerRow , 50)]
+    /// </summary>
+    /// <param name="seat"></param>
+    /// <returns></returns>
     private (int, int) ParseSeat(string seat)
     {
-        int row = -1, col = -1; // _rows: [0, 25], _cols: [1, min(_seatMap._seatsPerRow , 50)]
+        int row = -1, col = -1; // _rows: [0, 25], _cols: [1, min(_seatsPerRow , 50)]
         MatchCollection matches = _regex.Matches(seat);
         WriteLine($"{matches.Count} matches");
         if (matches.Count > 0)

@@ -58,9 +58,7 @@ public class SeatRow : IDisposable
             seats.Add(i);
         }
         _offset = offset + _tickets;
-        if (_offset == Seats.Count || Seats[_offset] == 'x')
-            // Check and reset _offset to the right-most empty seat
-            for (--_offset; _offset >= 0 && Seats[_offset] == 'x'; _offset--) ;
+        AdjustOffset();
         return seats;
     }
     /// <summary>
@@ -96,7 +94,7 @@ public class SeatRow : IDisposable
             WriteLine($"{nameof(Reserve)}: No available seats in this row!");
             return seats;
         }
-        int i = seat, allocated = 0;
+        int i = seat;
         for (; i < Seats.Count && seats.Count < tickets; i++)
             if (Seats[i] == ' ')
             {
@@ -105,10 +103,17 @@ public class SeatRow : IDisposable
             }
         for (; i < Seats.Count && Seats[i] == 'x'; i++) ;
         _offset = i;
+        AdjustOffset();
+        return seats;
+    }
+    /// <summary>
+    /// Adjust _offset for the next reservation request. < 0 : This row is full
+    /// </summary>
+    private void AdjustOffset()
+    {
         if (_offset == Seats.Count || Seats[_offset] == 'x')
             // Check and reset _offset to the right-most empty seat
             for (--_offset; _offset >= 0 && Seats[_offset] == 'x'; _offset--) ;
-        return seats;
     }
     /// <summary>
     /// Calculate the center-most offset of the beginning of seat assignment for the number of required tickets in this row
