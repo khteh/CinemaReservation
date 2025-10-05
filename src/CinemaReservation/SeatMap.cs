@@ -1,6 +1,6 @@
 ﻿using CinemaReservation.Strategies;
+using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
-using static System.Console;
 namespace CinemaReservation;
 
 public class SeatMap : IDisposable
@@ -11,9 +11,11 @@ public class SeatMap : IDisposable
     private int _runningCount = 0;
     private List<SeatRow> _rows;
     private Dictionary<string, Reservation> _reservations;
+    private readonly ILogger<SeatMap> _logger;
     public string Title { get => _title; }
-    public SeatMap(ISeatAllocationStrategy strategy, string title, int rows = 26, int seats = 50)
+    public SeatMap(ILoggerFactory logger, ISeatAllocationStrategy strategy, string title, int rows = 26, int seats = 50)
     {
+        _logger = logger.CreateLogger<SeatMap>();
         if (string.IsNullOrEmpty(title.Trim())) throw new ArgumentNullException(nameof(title));
         if (rows < 1 || rows > 26) throw new ArgumentOutOfRangeException(nameof(rows));
         if (seats < 1 || seats > 50) throw new ArgumentOutOfRangeException(nameof(seats));
@@ -21,7 +23,7 @@ public class SeatMap : IDisposable
         _rows = new List<SeatRow>(); // _rows: [0, 25], _cols: [1, 50]
         _reservations = new Dictionary<string, Reservation>();
         for (int i = 0; i < rows; i++)
-            _rows.Add(new SeatRow(strategy, seats));
+            _rows.Add(new SeatRow(logger.CreateLogger<SeatRow>(), strategy, seats));
         _seatsPerRow = _rows.Any() ? _rows.First().Seats.Count : 0;
     }
     public int SeatsAvailable() => _rows.AsParallel().Sum(r => r.AvailableSeats());
@@ -32,7 +34,7 @@ public class SeatMap : IDisposable
         if (tickets <= 0) throw new ArgumentOutOfRangeException(nameof(tickets));
         if (tickets > SeatsAvailable())
         {
-            WriteLine($"Not enough seats available!");
+            _logger.LogError($"{nameof(Reserve)}: Not enough seats available!");
             return reservation;
         }
         int row = -1, col = -1;
@@ -41,7 +43,7 @@ public class SeatMap : IDisposable
             (row, col) = ParseSeat(seat);
             if (row < 0 || col < 1)
                 throw new ArgumentOutOfRangeException(nameof(seat));
-            WriteLine($"{nameof(Reserve)} Reserving {tickets} seats from ({row}, {col - 1})");
+            _logger.LogDebug($"{nameof(Reserve)} Reserving {tickets} seats from ({row}, {col - 1})");
             List<int> reserved = _rows[row].Reserve(col - 1, tickets);
             if (reserved.Any())
             {
@@ -95,7 +97,7 @@ public class SeatMap : IDisposable
     {
         int row = -1, col = -1; // _rows: [0, 25], _cols: [1, min(_seatsPerRow , 50)]
         MatchCollection matches = _regex.Matches(seat);
-        WriteLine($"{matches.Count} matches");
+        _logger.LogDebug($"{matches.Count} matches");
         if (matches.Count > 0)
         {
             /* Report on each match.
@@ -105,7 +107,7 @@ public class SeatMap : IDisposable
             int _row = matches[0].Groups[1].Value.ToLower()[0] - 'a';
             if (Int32.TryParse(matches[0].Groups[2].Value, out int _col))
             {
-                WriteLine($"{nameof(ParseSeat)} row: {_row}/{_rows.Count}, col: {_col}/{int.Min(_seatsPerRow, 50)}");
+                _logger.LogDebug($"{nameof(ParseSeat)} row: {_row}/{_rows.Count}, col: {_col}/{int.Min(_seatsPerRow, 50)}");
                 if (_row >= 0 && _row < int.Min(_rows.Count, 26) && _col >= 1 && _col <= int.Min(_seatsPerRow, 50))
                 {
                     row = _row;
@@ -115,15 +117,17 @@ public class SeatMap : IDisposable
         }
         return (row, col);
     }
-    public void ShowMap(string id)
+    public void ShowMap(string id, List<List<char>> map)
     {
         if (string.IsNullOrEmpty(id) || !_reservations.ContainsKey(id)) throw new ArgumentOutOfRangeException(nameof(id));
-        WriteLine("\t\t{_title}");
-        List<List<char>> rows = new List<List<char>>();
-        for (int i = _rows.Count - 1; i >= 0; i--)
+        if (!_reservations.ContainsKey(id.Trim())) throw new ArgumentOutOfRangeException(nameof(id));
+        Reservation reservation = _reservations[id.Trim()];
+        for (int i = 0; i < _rows.Count; i++)
         {
-            List<char> row = new List<char>();
-            //for (int j = 0; j < _rows[i].Seats.Count; j++)
+            map.Add(new List<char>(_rows[i].Seats));
+            for (int j = 0; j < map[i].Count; j++)
+                if (reservation.Seats.ContainsKey(i) && reservation.Seats[i].Contains(j))
+                    map[i][j] = '#';
         }
     }
     public void Dispose()

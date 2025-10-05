@@ -1,5 +1,5 @@
 ﻿using CinemaReservation.Strategies;
-using static System.Console;
+using Microsoft.Extensions.Logging;
 namespace CinemaReservation;
 
 public class SeatRow : IDisposable
@@ -11,9 +11,11 @@ public class SeatRow : IDisposable
     /// </summary>
     private int _index = 0;
     private readonly ISeatAllocationStrategy _strategy;
+    private readonly ILogger<SeatRow> _logger;
     public List<char> Seats { get; private set; }
-    public SeatRow(ISeatAllocationStrategy strategy, int seats)
+    public SeatRow(ILogger<SeatRow> logger, ISeatAllocationStrategy strategy, int seats)
     {
+        _logger = logger;
         _strategy = strategy;
         Seats = new List<char>();
         for (int i = 0; i < seats; i++)
@@ -31,7 +33,7 @@ public class SeatRow : IDisposable
         List<int> seats = new List<int>();
         if (AvailableSeats() == 0)
         {
-            WriteLine($"{nameof(Reserve)}: No available seats in this row!");
+            _logger.LogError($"{nameof(Reserve)}: No available seats in this row!");
             return seats;
         }
         //_index = _strategy.Allocate(_index, tickets, Seats, seats); Pending confirmation
@@ -51,7 +53,7 @@ public class SeatRow : IDisposable
         List<int> seats = new List<int>();
         if (AvailableSeats() == 0)
         {
-            WriteLine($"{nameof(Reserve)}: No available seats in this row!");
+            _logger.LogError($"{nameof(Reserve)}: No available seats in this row!");
             return seats;
         }
         //_index = _strategy.Allocate(seat, _index, tickets, Seats, seats); pending confirmation

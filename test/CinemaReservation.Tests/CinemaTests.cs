@@ -1,17 +1,24 @@
 ﻿using CinemaReservation.Strategies;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 namespace CinemaReservation.Tests;
 
 public class CinemaTests : IClassFixture<TestFixture>
 {
-    private ISeatAllocationStrategy _strategy;
+    private readonly ISeatAllocationStrategy _strategy;
+    private readonly ILoggerFactory _logger;
     private FieldInfo _seatMapField = typeof(Cinema).GetField("_seatMap", BindingFlags.Instance | BindingFlags.NonPublic);
-    public CinemaTests(TestFixture testFixture) => _strategy = testFixture.Strategy;
+    public CinemaTests(TestFixture testFixture)
+    {
+        //_logger = new Mock<ILogger<Cinema>>().Object;
+        _logger = testFixture.Host.Services.GetService<ILoggerFactory>();
+        _strategy = testFixture.Strategy;
+    }
     [Fact]
     public void CreateMovieTests()
     {
         string title = "Sex and the City";
-        Cinema cinema = new Cinema(_strategy);
+        Cinema cinema = new Cinema(_logger, _strategy);
         Dictionary<string, SeatMap> seatMap = (Dictionary<string, SeatMap>)_seatMapField.GetValue(cinema);
         cinema.CreateMovie(title, 10, 10);
         Assert.NotNull(seatMap);
@@ -20,7 +27,7 @@ public class CinemaTests : IClassFixture<TestFixture>
     [Fact]
     public void InvalidArgumentsShouldThrowTests()
     {
-        Cinema cinema = new Cinema(_strategy);
+        Cinema cinema = new Cinema(_logger, _strategy);
         //act
         Action act1 = () => cinema.Reserve(nameof(InvalidArgumentsShouldThrowTests), 10, string.Empty);
         //assert
@@ -44,7 +51,7 @@ public class CinemaTests : IClassFixture<TestFixture>
     public void ReservationWithoutConfirmationTests()
     {
         string title = "The Avengers";
-        Cinema cinema = new Cinema(_strategy);
+        Cinema cinema = new Cinema(_logger, _strategy);
         Dictionary<string, SeatMap> seatMap = (Dictionary<string, SeatMap>)_seatMapField.GetValue(cinema);
         cinema.CreateMovie(title, 10, 10);
         Assert.NotNull(seatMap);
@@ -77,7 +84,7 @@ public class CinemaTests : IClassFixture<TestFixture>
     public void DefaultSeatReservationTests()
     {
         string title = "The Avengers";
-        Cinema cinema = new Cinema(_strategy);
+        Cinema cinema = new Cinema(_logger, _strategy);
         Dictionary<string, SeatMap> seatMap = (Dictionary<string, SeatMap>)_seatMapField.GetValue(cinema);
         cinema.CreateMovie(title, 10, 10);
         Assert.NotNull(seatMap);
@@ -153,7 +160,7 @@ public class CinemaTests : IClassFixture<TestFixture>
     public void SpecificSeatReservationTests()
     {
         string title = "Mission Impossible - Death Reckoning";
-        Cinema cinema = new Cinema(_strategy);
+        Cinema cinema = new Cinema(_logger, _strategy);
         Dictionary<string, SeatMap> seatMap = (Dictionary<string, SeatMap>)_seatMapField.GetValue(cinema);
         cinema.CreateMovie(title, 10, 10);
         Assert.NotNull(seatMap);

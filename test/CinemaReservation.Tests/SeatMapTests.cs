@@ -1,18 +1,24 @@
 ﻿using CinemaReservation.Strategies;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 
 namespace CinemaReservation.Tests;
 
 public class SeatMapTests : IClassFixture<TestFixture>
 {
-    private ISeatAllocationStrategy _strategy;
+    private readonly ISeatAllocationStrategy _strategy;
     private FieldInfo _rowfield = typeof(SeatMap).GetField("_rows", BindingFlags.Instance | BindingFlags.NonPublic);
-    public SeatMapTests(TestFixture testFixture) => _strategy = testFixture.Strategy;
+    private readonly ILoggerFactory _logger;
+    public SeatMapTests(TestFixture testFixture)
+    {
+        //_logger = new Mock<ILogger<SeatMap>>().Object;
+        _logger = testFixture.Host.Services.GetService<ILoggerFactory>();
+        _strategy = testFixture.Strategy;
+    }
     [Fact]
     public void AvailableSeatCountTests()
     {
-        _strategy = new MiddleToRightStrategy();
-        SeatMap sm = new SeatMap(_strategy, nameof(AvailableSeatCountTests), 10, 10);
+        SeatMap sm = new SeatMap(_logger, _strategy, nameof(AvailableSeatCountTests), 10, 10);
         Assert.Equal(100, sm.SeatsAvailable());
     }
     [Theory]
@@ -27,7 +33,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
     [InlineData("E11", -1, -1)] // col should be <= 10
     public void ParseSeatTests(string str, int row, int seat)
     {
-        SeatMap seatMap = new SeatMap(_strategy, nameof(ParseSeatTests), 10, 10);
+        SeatMap seatMap = new SeatMap(_logger, _strategy, nameof(ParseSeatTests), 10, 10);
         MethodInfo _parseSeat = seatMap.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(x => x.Name == "ParseSeat" && x.IsPrivate).First();
         Assert.NotNull(_parseSeat);
         (int row, int col) result = ((int row, int col))_parseSeat.Invoke(seatMap, new object[] { str });
@@ -37,7 +43,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
     [Fact]
     public void ReservationWithoutConfirmationTests()
     {
-        SeatMap sm = new SeatMap(_strategy, nameof(AvailableSeatCountTests), 10, 10);
+        SeatMap sm = new SeatMap(_logger, _strategy, nameof(AvailableSeatCountTests), 10, 10);
         List<SeatRow> rows = (List<SeatRow>)_rowfield.GetValue(sm);
         FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -57,15 +63,28 @@ public class SeatMapTests : IClassFixture<TestFixture>
     [Fact]
     public void DefaultSeatReservationTests()
     {
-        SeatMap sm = new SeatMap(_strategy, nameof(AvailableSeatCountTests), 10, 10);
+        SeatMap sm = new SeatMap(_logger, _strategy, nameof(AvailableSeatCountTests), 10, 10);
         List<SeatRow> rows = (List<SeatRow>)_rowfield.GetValue(sm);
         FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
+        List<List<char>> map = new List<List<char>>();
 
         int seats = sm.SeatsAvailable();
         Assert.Equal(100, seats);
         Reservation reservation = sm.Reserve(10, string.Empty);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
+        sm.ShowMap(reservation.Id, map);
+        Assert.Equal([['#', '#', '#', '#', '#', '#', '#', '#', '#', '#'], /* Row A*/
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ], map);
         seats = sm.SeatsAvailable();
         Assert.Equal(90, seats);
         Assert.Equal("GIC0000", reservation.Id);
@@ -78,6 +97,19 @@ public class SeatMapTests : IClassFixture<TestFixture>
         reservation = sm.Reserve(15, string.Empty);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
+        map.Clear();
+        sm.ShowMap(reservation.Id, map);
+        Assert.Equal([['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'], /* Row A*/
+            ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#'],
+            [' ', ' ', '#', '#', '#', '#', '#', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ], map);
         seats = sm.SeatsAvailable();
         Assert.Equal(75, seats);
         Assert.Equal("GIC0001", reservation.Id);
@@ -109,6 +141,19 @@ public class SeatMapTests : IClassFixture<TestFixture>
         reservation = sm.Reserve(8, string.Empty);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
+        map.Clear();
+        sm.ShowMap(reservation.Id, map);
+        Assert.Equal([['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'], /* Row A*/
+            ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'],
+            [' ', ' ', 'x', 'x', 'x', 'x', 'x', '#', '#', '#'],
+            [' ', ' ', '#', '#', '#', '#', '#', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ], map);
         seats = sm.SeatsAvailable();
         Assert.Equal(67, seats);
         Assert.Equal("GIC0002", reservation.Id);
@@ -144,6 +189,19 @@ public class SeatMapTests : IClassFixture<TestFixture>
         reservation = sm.Reserve(7, string.Empty);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
+        map.Clear();
+        sm.ShowMap(reservation.Id, map);
+        Assert.Equal([['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'], /* Row A*/
+            ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'],
+            ['#', '#', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'],
+            [' ', ' ', 'x', 'x', 'x', 'x', 'x', '#', '#', '#'],
+            [' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ], map);
         seats = sm.SeatsAvailable();
         Assert.Equal(60, seats);
         Assert.Equal("GIC0003", reservation.Id);
@@ -188,7 +246,8 @@ public class SeatMapTests : IClassFixture<TestFixture>
     [Fact]
     public void SpecificSeatReservationTests()
     {
-        SeatMap sm = new SeatMap(_strategy, nameof(AvailableSeatCountTests), 10, 10);
+        List<List<char>> map = new List<List<char>>();
+        SeatMap sm = new SeatMap(_logger, _strategy, nameof(AvailableSeatCountTests), 10, 10);
         List<SeatRow> rows = (List<SeatRow>)_rowfield.GetValue(sm);
         FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -197,6 +256,18 @@ public class SeatMapTests : IClassFixture<TestFixture>
         Reservation reservation = sm.Reserve(10, "C04");
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
+        sm.ShowMap(reservation.Id, map);
+        Assert.Equal([[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], /* Row A*/
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#'],
+            [' ', ' ', ' ', '#', '#', '#', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ], map);
         seats = sm.SeatsAvailable();
         Assert.Equal(90, seats);
         Assert.Equal("GIC0000", reservation.Id);
@@ -224,6 +295,19 @@ public class SeatMapTests : IClassFixture<TestFixture>
         reservation = sm.Reserve(15, "B04");
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
+        map.Clear();
+        sm.ShowMap(reservation.Id, map);
+        Assert.Equal([[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], /* Row A*/
+            [' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#'],
+            ['#', '#', '#', 'x', 'x', 'x', 'x', 'x', 'x', 'x'],
+            [' ', ' ', ' ', 'x', 'x', 'x', '#', '#', '#', '#'],
+            [' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ], map);
         seats = sm.SeatsAvailable();
         Assert.Equal(75, seats);
         Assert.Equal("GIC0001", reservation.Id);
@@ -269,6 +353,19 @@ public class SeatMapTests : IClassFixture<TestFixture>
         reservation = sm.Reserve(13, "A04");
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
+        map.Clear();
+        sm.ShowMap(reservation.Id, map);
+        Assert.Equal([[' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#'], /* Row A*/
+            ['#', '#', '#', 'x', 'x', 'x', 'x', 'x', 'x', 'x'],
+            ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'],
+            ['#', '#', '#', 'x', 'x', 'x', 'x', 'x', 'x', 'x'],
+            [' ', ' ', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ], map);
         seats = sm.SeatsAvailable();
         Assert.Equal(62, seats);
         Assert.Equal("GIC0002", reservation.Id);
@@ -310,6 +407,19 @@ public class SeatMapTests : IClassFixture<TestFixture>
         reservation = sm.Reserve(19, string.Empty);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
+        map.Clear();
+        sm.ShowMap(reservation.Id, map);
+        Assert.Equal([['#', '#', '#', 'x', 'x', 'x', 'x', 'x', 'x', 'x'], /* Row A*/
+            ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'],
+            ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'],
+            ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'],
+            [' ', ' ', ' ', ' ', 'x', '#', '#', '#', '#', '#'],
+            ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#'],
+            [' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ], map);
         seats = sm.SeatsAvailable();
         Assert.Equal(43, seats);
         Assert.Equal("GIC0003", reservation.Id);

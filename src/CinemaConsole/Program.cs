@@ -1,7 +1,9 @@
-﻿using CinemaReservation.Strategies;
+﻿using CinemaReservation;
+using CinemaReservation.Strategies;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 using static System.Console;
 namespace CinemaConsole;
 public partial class Program
@@ -10,10 +12,10 @@ public partial class Program
     {
         try
         {
-            CreateHostBuilder(args)
-                .Build()
-                .Services.GetRequiredService<CinemaConsoleApp>() // Resolve your main application class
-                .Run(args); // Execute your application logic
+            var app = CreateHostBuilder(args)
+                .Build();
+            app.Services.GetRequiredService<CinemaConsoleApp>() // Resolve your main application class
+               .Run(args); // Execute your application logic
             return 0;
         }
         catch (Exception e)
@@ -30,13 +32,16 @@ public partial class Program
             .ConfigureAppConfiguration(cfg =>
             {
                 cfg.SetBasePath(contentRootFull);
-                cfg.AddJsonFile($"appsettings.{environment}.json", false, true);
+                cfg.AddJsonFile("appsettings.json", false, true);
+                //cfg.AddJsonFile($"appsettings.{environment}.json", false, true);
                 cfg.AddEnvironmentVariables().Build();
             })
             .ConfigureServices((hostContext, services) =>
             {
                 services.AddTransient<ISeatAllocationStrategy, MiddleToRightStrategy>();
+                services.AddTransient<Cinema>(); // Register your main application class
                 services.AddSingleton<CinemaConsoleApp>(); // Register your main application class
-            });
+            })
+            .UseSerilog((ctx, svc, config) => config.ReadFrom.Configuration(ctx.Configuration).ReadFrom.Services(svc).Enrich.FromLogContext());
     }
 }

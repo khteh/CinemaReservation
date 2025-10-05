@@ -1,13 +1,17 @@
 ﻿using CinemaReservation.Strategies;
-using static System.Console;
+using Microsoft.Extensions.Logging;
 namespace CinemaReservation;
 
 public class Cinema
 {
     private readonly ISeatAllocationStrategy _strategy;
     private Dictionary<string, SeatMap> _seatMap;
-    public Cinema(ISeatAllocationStrategy strategy)
+    private readonly ILogger<Cinema> _logger;
+    private readonly ILoggerFactory _loggerFactory;
+    public Cinema(ILoggerFactory logger, ISeatAllocationStrategy strategy)
     {
+        _loggerFactory = logger;
+        _logger = logger.CreateLogger<Cinema>();
         _strategy = strategy;
         _seatMap = new Dictionary<string, SeatMap>();
     }
@@ -18,7 +22,7 @@ public class Cinema
         if (rows < 0) throw new ArgumentOutOfRangeException(nameof(rows));
         if (seats < 0) throw new ArgumentOutOfRangeException(nameof(seats));
         if (!_seatMap.ContainsKey(title))
-            _seatMap.Add(title, new SeatMap(_strategy, title, rows, seats));
+            _seatMap.Add(title, new SeatMap(_loggerFactory, _strategy, title, rows, seats));
         return _seatMap[title].SeatsAvailable();
     }
     public int SeatsAvailable(string title) => _seatMap.ContainsKey(title) ? _seatMap[title].SeatsAvailable() : 0;
@@ -32,7 +36,7 @@ public class Cinema
         if (tickets <= 0) throw new ArgumentOutOfRangeException(nameof(tickets));
         if (tickets > _seatMap[title_lower].SeatsAvailable())
         {
-            WriteLine($"Not enough seats available!");
+            _logger.LogError($"{nameof(Reserve)}: Not enough seats available!");
             return null;
         }
         return _seatMap[title_lower].Reserve(tickets, seat);
@@ -45,5 +49,14 @@ public class Cinema
         if (!_seatMap.ContainsKey(title_lower))
             throw new InvalidOperationException($"Invalid movie title! {title}");
         return _seatMap[title_lower].ConfirmReservation(id);
+    }
+    public void ShowMap(string title, string id, List<List<char>> map)
+    {
+        string title_lower = title.Trim().ToLower();
+        id = id.Trim();
+        if (string.IsNullOrEmpty(title_lower)) throw new ArgumentNullException(nameof(title));
+        if (!_seatMap.ContainsKey(title_lower))
+            throw new InvalidOperationException($"Invalid movie title! {title}");
+        _seatMap[title_lower].ShowMap(id, map);
     }
 }

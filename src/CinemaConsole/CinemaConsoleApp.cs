@@ -1,5 +1,6 @@
 ﻿using CinemaReservation;
 using CinemaReservation.Strategies;
+using Microsoft.Extensions.Logging;
 using static System.Console;
 namespace CinemaConsole;
 
@@ -8,15 +9,17 @@ public class CinemaConsoleApp
     private Cinema _cinema;
     private readonly ISeatAllocationStrategy _strategy;
     private Dictionary<string, Reservation> _reservations = new Dictionary<string, Reservation>();
-    public CinemaConsoleApp(ISeatAllocationStrategy strategy)
+    private readonly ILogger<CinemaConsoleApp> _logger;
+    public CinemaConsoleApp(ISeatAllocationStrategy strategy, ILogger<CinemaConsoleApp> logger, Cinema cinema)
     {
+        _logger = logger;
         _strategy = strategy;
-        _cinema = new Cinema(_strategy);
+        _cinema = cinema;
     }
     public void Run(string[] args)
     {
         bool leave = false;
-        string title = string.Empty;
+        string title = string.Empty, title_lower = string.Empty;
         int rows = -1, seats = -1;
         bool movieCreated = false;
         while (!leave)
@@ -30,19 +33,20 @@ public class CinemaConsoleApp
                 {
                     string[] values = input.Split(' ');
                     title = values[0].Trim();
+                    title_lower = title.ToLower();
                     rows = int.Parse(values[1].Trim());
                     seats = int.Parse(values[2].Trim());
                 }
                 if (!string.IsNullOrEmpty(title) && rows > 0 && rows <= 26 && seats > 0 && seats <= 50)
                 {
-                    _cinema.CreateMovie(title.ToLower(), rows, seats);
+                    _cinema.CreateMovie(title_lower, rows, seats);
                     movieCreated = true;
                 }
             }
             else
             {
                 WriteLine("Welcome to GIC Cinemas!");
-                WriteLine($"[1] Book tickets for {title} ({_cinema.SeatsAvailable(title.ToLower())} seats available)");
+                WriteLine($"[1] Book tickets for {title} ({_cinema.SeatsAvailable(title_lower)} seats available)");
                 WriteLine("[2] Check reservations");
                 WriteLine("[3] Exit");
                 WriteLine("Please enter your selection:");
@@ -53,16 +57,7 @@ public class CinemaConsoleApp
                     switch (input)
                     {
                         case "1":
-                            WriteLine("Enter #tickets to purchase. [ENTER to return to main menu]:");
-                            Write("> ");
-                            input = ReadLine();
-                            if (!string.IsNullOrEmpty(input))
-                            {
-                                int tickets = int.Parse(input.Trim());
-                                if (tickets > 0 && tickets <= _cinema.SeatsAvailable(title.ToLower()))
-                                {
-                                }
-                            }
+                            HandleSeatReservation(title_lower);
                             break;
                         case "2":
                             break;
@@ -74,10 +69,46 @@ public class CinemaConsoleApp
             }
         }
     }
-    private void PrintSeats(SeatMap seatmap)
+    private void HandleSeatReservation(string title)
     {
-        WriteLine("\t\tSCREEN\t\t");
-        //foreach ()
+        for (bool quit = false; !quit;)
+        {
+            WriteLine("Enter #tickets to purchase. [ENTER to return to main menu]:");
+            Write("> ");
+            string input = ReadLine();
+            quit = string.IsNullOrEmpty(input);
+            if (!quit)
+            {
+                _logger.LogInformation($"{nameof(CinemaConsoleApp)} input: {input}");
+                int tickets = int.Parse(input.Trim());
+                if (tickets > 0 && tickets <= _cinema.SeatsAvailable(title))
+                {
+                    Reservation reservation = _cinema.Reserve(title, tickets, string.Empty);
+                    if (reservation != null && !string.IsNullOrEmpty(reservation.Id))
+                    {
+                        List<List<char>> map = new List<List<char>>();
+                        _cinema.ShowMap(title, reservation.Id, map);
+                        WriteLine($"Successfully reserved {tickets} {title} tickets!");
+                        WriteLine($"Reservation Id: {reservation.Id}");
+                        WriteLine($"Selected seats:");
+                        WriteLine();
+                        WriteLine("---------- SCREEN ----------");
+                        for (int i = map.Count - 1; i >= 0; i--)
+                        {
+                            for (int j = 0; j < map[i].Count; j++)
+                                Write(map[i][j] == ' ' ? '.' : map[i][j]);
+                            WriteLine();
+                        }
+                        WriteLine("[ENTER] to accept seat selection OR enter a new seating (One alphabet for row and 2 digits for seat in the row):");
+                        Write("> ");
+                        input = ReadLine();
+                        quit = string.IsNullOrEmpty(input);
+                        if (!quit)
+                            ;
+                    }
+                }
+            }
+        }
     }
     private void CheckReservation(string id)
     {

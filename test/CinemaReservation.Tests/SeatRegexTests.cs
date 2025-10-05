@@ -1,4 +1,5 @@
 using CinemaReservation.Strategies;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 using System.Text.RegularExpressions;
 namespace CinemaReservation.Tests;
@@ -6,7 +7,8 @@ namespace CinemaReservation.Tests;
 public class SeatRegexTests : IClassFixture<TestFixture>
 {
     private readonly ITestOutputHelper _output;
-    private ISeatAllocationStrategy _strategy;
+    private readonly ISeatAllocationStrategy _strategy;
+    private readonly ILoggerFactory _logger;
     private readonly Regex _regex = new Regex(@"^([a-zA-Z]{1})([0-9]{2})$");
     private readonly SeatMap _seatMap;
     private FieldInfo _field = typeof(SeatMap).GetField("_seatsPerRow", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -14,8 +16,10 @@ public class SeatRegexTests : IClassFixture<TestFixture>
     public SeatRegexTests(ITestOutputHelper output, TestFixture testFixture)
     {
         _output = output;
+        //_logger = new Mock<ILogger<SeatMap>>().Object;
+        _logger = testFixture.Host.Services.GetService<ILoggerFactory>();
         _strategy = testFixture.Strategy;
-        _seatMap = new SeatMap(_strategy, "Test Movie", 10, 10);
+        _seatMap = new SeatMap(_logger, _strategy, "Test Movie", 10, 10);
     }
     [Theory]
     [InlineData(1, "A05", 0, 5)]

@@ -4,7 +4,7 @@ namespace CinemaReservation.Tests;
 
 public class MiddleToRightStrategyTests
 {
-    private ISeatAllocationStrategy _strategy;
+    private readonly ISeatAllocationStrategy _strategy;
     public MiddleToRightStrategyTests()
     {
         _strategy = new MiddleToRightStrategy();
