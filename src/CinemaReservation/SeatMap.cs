@@ -14,7 +14,7 @@ public class SeatMap : IDisposable
     public string Title { get => _title; }
     public SeatMap(ISeatAllocationStrategy strategy, string title, int rows = 26, int seats = 50)
     {
-        if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+        if (string.IsNullOrEmpty(title.Trim())) throw new ArgumentNullException(nameof(title));
         if (rows < 1 || rows > 26) throw new ArgumentOutOfRangeException(nameof(rows));
         if (seats < 1 || seats > 50) throw new ArgumentOutOfRangeException(nameof(seats));
         _title = title;
@@ -72,6 +72,19 @@ public class SeatMap : IDisposable
         _reservations.Add(id, reservation);
         Interlocked.Increment(ref _runningCount);
         return reservation;
+    }
+    public bool ConfirmReservation(string id)
+    {
+        if (string.IsNullOrEmpty(id.Trim())) throw new ArgumentNullException(nameof(id));
+        if (!_reservations.ContainsKey(id.Trim())) throw new ArgumentOutOfRangeException(nameof(id));
+        Reservation reservation = _reservations[id.Trim()];
+        if (!reservation.Confirmed)
+        {
+            foreach (KeyValuePair<int, List<int>> kv in reservation.Seats)
+                _rows[kv.Key].Confirm(kv.Value);
+            reservation.Confirmed = true;
+        }
+        return true;
     }
     /// <summary>
     /// Parse the input seat request string to it's corresponding row: [0, 25], cols: [1, min(_seatsPerRow , 50)]

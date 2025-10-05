@@ -9,7 +9,7 @@ public class MiddleToRightStrategy : ISeatAllocationStrategy
     /// <param name="seats"></param>
     /// <param name="allocations"></param>
     /// <returns>Index of next available seat. -1 if none.</returns>
-    public int Allocate(int index, int tickets, List<char> seats, List<int> allocations)
+    public void Allocate(int index, int tickets, List<char> seats, List<int> allocations)
     {
         /*
         0 1 2 3 4 5 6 7 8 9
@@ -31,7 +31,7 @@ public class MiddleToRightStrategy : ISeatAllocationStrategy
                 x x			<= (11 - 2) / 2 = 4.5 (floor)     
         */
         if (index < 0) // This row is full
-            return index;
+            return;
         int _tickets = Tickets(index, tickets, seats);
         int _index = Index(index, tickets, seats);
         int i = _index;
@@ -40,8 +40,6 @@ public class MiddleToRightStrategy : ISeatAllocationStrategy
             seats[i] = 'x';
             allocations.Add(i);
         }
-        index = _index + _tickets;
-        return AdjustIndex(index, seats);
     }
     /// <summary>
     /// Allocate seats starting from the requested seat and moving to the right.
@@ -53,7 +51,7 @@ public class MiddleToRightStrategy : ISeatAllocationStrategy
     /// <param name="allocations"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public int Allocate(int seat, int index, int tickets, List<char> seats, List<int> allocations)
+    public void Allocate(int seat, int index, int tickets, List<char> seats, List<int> allocations)
     {
         /*
         0 1 2 3 4 5 6 7 8 9
@@ -75,7 +73,7 @@ public class MiddleToRightStrategy : ISeatAllocationStrategy
                 x x			<= (11 - 2) / 2 = 4.5 (floor)     
         */
         if (index < 0) // This row is full
-            return index;
+            return;
         int i = seat;
         for (; i < seats.Count && allocations.Count < tickets; i++)
             if (seats[i] == ' ')
@@ -83,16 +81,15 @@ public class MiddleToRightStrategy : ISeatAllocationStrategy
                 seats[i] = 'x';
                 allocations.Add(i);
             }
-        for (; i < seats.Count && seats[i] == 'x'; i++) ;
-        index = i;
-        return AdjustIndex(index, seats);
     }
     /// <summary>
     /// Adjust index for the next reservation request. < 0 : This row is full
     /// </summary>
-    private int AdjustIndex(int index, List<char> seats)
+    public int AdjustIndex(int index, List<char> seats)
     {
-        if (index == seats.Count || seats[index] == 'x')
+        // Check to the right for empty seat
+        for (; index < seats.Count && seats[index] == 'x'; index++) ;
+        if (index == seats.Count)
             // Check and reset index to the right-most empty seat
             for (--index; index >= 0 && seats[index] == 'x'; index--) ;
         return index;

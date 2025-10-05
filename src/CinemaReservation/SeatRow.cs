@@ -27,13 +27,16 @@ public class SeatRow : IDisposable
     /// <returns>List of seats successfully reserved out of the requested number of tickets in this seat row.</returns>
     public List<int> Reserve(int tickets)
     {
+        int index = _index;
         List<int> seats = new List<int>();
         if (AvailableSeats() == 0)
         {
             WriteLine($"{nameof(Reserve)}: No available seats in this row!");
             return seats;
         }
-        _index = _strategy.Allocate(_index, tickets, Seats, seats);
+        //_index = _strategy.Allocate(_index, tickets, Seats, seats); Pending confirmation
+        List<char> _seats = new(Seats);
+        _strategy.Allocate(index, tickets, _seats, seats);
         return seats;
     }
     /// <summary>
@@ -44,14 +47,25 @@ public class SeatRow : IDisposable
     /// <returns>List of seats successfully reserved out of the requested number of tickets in this seat row.</returns>
     public List<int> Reserve(int seat, int tickets)
     {
+        int index = _index;
         List<int> seats = new List<int>();
         if (AvailableSeats() == 0)
         {
             WriteLine($"{nameof(Reserve)}: No available seats in this row!");
             return seats;
         }
-        _index = _strategy.Allocate(seat, _index, tickets, Seats, seats);
+        //_index = _strategy.Allocate(seat, _index, tickets, Seats, seats); pending confirmation
+        List<char> _seats = new(Seats);
+        _strategy.Allocate(seat, index, tickets, _seats, seats);
         return seats;
+    }
+    public bool Confirm(List<int> seats)
+    {
+        foreach (int seat in seats)
+            Seats[seat] = 'x';
+        _index = seats.Last() + 1;
+        _index = _strategy.AdjustIndex(_index, Seats);
+        return true;
     }
     public void Dispose()
     {

@@ -37,7 +37,13 @@ public class Cinema
         }
         return _seatMap[title_lower].Reserve(tickets, seat);
     }
-    public void Confirm(string id)
+    public bool Confirm(string title, string id)
     {
+        string title_lower = title.Trim().ToLower();
+        id = id.Trim();
+        if (string.IsNullOrEmpty(title_lower)) throw new ArgumentNullException(nameof(title));
+        if (!_seatMap.ContainsKey(title_lower))
+            throw new InvalidOperationException($"Invalid movie title! {title}");
+        return _seatMap[title_lower].ConfirmReservation(id);
     }
 }

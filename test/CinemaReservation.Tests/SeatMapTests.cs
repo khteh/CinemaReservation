@@ -35,6 +35,26 @@ public class SeatMapTests : IClassFixture<TestFixture>
         Assert.Equal(seat, result.col);
     }
     [Fact]
+    public void ReservationWithoutConfirmationTests()
+    {
+        SeatMap sm = new SeatMap(_strategy, nameof(AvailableSeatCountTests), 10, 10);
+        List<SeatRow> rows = (List<SeatRow>)_rowfield.GetValue(sm);
+        FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        int seats = sm.SeatsAvailable();
+        Assert.Equal(100, seats);
+        Reservation reservation = sm.Reserve(10, string.Empty);
+        Assert.NotNull(reservation);
+        seats = sm.SeatsAvailable();
+        Assert.Equal(100, seats);
+        Assert.Equal("GIC0000", reservation.Id);
+        Assert.Equal(new Dictionary<int, List<int>>() { { 0, new List<int>() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } } }, reservation.Seats);
+        Assert.Equal(10, rows[0].AvailableSeats());
+        // Validate _index
+        int _index = (int)_field.GetValue(rows[0]);
+        Assert.Equal(0, _index);
+    }
+    [Fact]
     public void DefaultSeatReservationTests()
     {
         SeatMap sm = new SeatMap(_strategy, nameof(AvailableSeatCountTests), 10, 10);
@@ -45,6 +65,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         Assert.Equal(100, seats);
         Reservation reservation = sm.Reserve(10, string.Empty);
         Assert.NotNull(reservation);
+        sm.ConfirmReservation(reservation.Id);
         seats = sm.SeatsAvailable();
         Assert.Equal(90, seats);
         Assert.Equal("GIC0000", reservation.Id);
@@ -56,6 +77,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
 
         reservation = sm.Reserve(15, string.Empty);
         Assert.NotNull(reservation);
+        sm.ConfirmReservation(reservation.Id);
         seats = sm.SeatsAvailable();
         Assert.Equal(75, seats);
         Assert.Equal("GIC0001", reservation.Id);
@@ -86,6 +108,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
 
         reservation = sm.Reserve(8, string.Empty);
         Assert.NotNull(reservation);
+        sm.ConfirmReservation(reservation.Id);
         seats = sm.SeatsAvailable();
         Assert.Equal(67, seats);
         Assert.Equal("GIC0002", reservation.Id);
@@ -120,6 +143,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
 
         reservation = sm.Reserve(7, string.Empty);
         Assert.NotNull(reservation);
+        sm.ConfirmReservation(reservation.Id);
         seats = sm.SeatsAvailable();
         Assert.Equal(60, seats);
         Assert.Equal("GIC0003", reservation.Id);
@@ -172,6 +196,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         Assert.Equal(100, seats);
         Reservation reservation = sm.Reserve(10, "C04");
         Assert.NotNull(reservation);
+        sm.ConfirmReservation(reservation.Id);
         seats = sm.SeatsAvailable();
         Assert.Equal(90, seats);
         Assert.Equal("GIC0000", reservation.Id);
@@ -198,6 +223,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
 
         reservation = sm.Reserve(15, "B04");
         Assert.NotNull(reservation);
+        sm.ConfirmReservation(reservation.Id);
         seats = sm.SeatsAvailable();
         Assert.Equal(75, seats);
         Assert.Equal("GIC0001", reservation.Id);
@@ -242,6 +268,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
 
         reservation = sm.Reserve(13, "A04");
         Assert.NotNull(reservation);
+        sm.ConfirmReservation(reservation.Id);
         seats = sm.SeatsAvailable();
         Assert.Equal(62, seats);
         Assert.Equal("GIC0002", reservation.Id);
@@ -282,6 +309,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         // Default Reservation
         reservation = sm.Reserve(19, string.Empty);
         Assert.NotNull(reservation);
+        sm.ConfirmReservation(reservation.Id);
         seats = sm.SeatsAvailable();
         Assert.Equal(43, seats);
         Assert.Equal("GIC0003", reservation.Id);
