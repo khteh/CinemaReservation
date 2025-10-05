@@ -8,7 +8,7 @@ public class SeatRow : IDisposable
     /// The center-most seat to reserve from this row.
     /// Adjusted after every successful reservation.
     /// </summary>
-    private int _offset = 0;
+    private int _index = 0;
     public List<char> Seats { get; private set; }
     public SeatRow(int seats)
     {
@@ -16,7 +16,7 @@ public class SeatRow : IDisposable
         for (int i = 0; i < seats; i++)
             Seats.Add(' ');
     }
-    public int AvailableSeats() => _offset >= 0 ? Seats.Where(s => s.Equals(' ')).Count() : 0;
+    public int AvailableSeats() => _index >= 0 ? Seats.Where(s => s.Equals(' ')).Count() : 0;
     /// <summary>
     /// Reserve available seats out of the requested number of tickets in this seat row.
     /// </summary>
@@ -57,7 +57,7 @@ public class SeatRow : IDisposable
             Seats[i] = 'x';
             seats.Add(i);
         }
-        _offset = offset + _tickets;
+        _index = offset + _tickets;
         AdjustOffset();
         return seats;
     }
@@ -102,18 +102,18 @@ public class SeatRow : IDisposable
                 seats.Add(i);
             }
         for (; i < Seats.Count && Seats[i] == 'x'; i++) ;
-        _offset = i;
+        _index = i;
         AdjustOffset();
         return seats;
     }
     /// <summary>
-    /// Adjust _offset for the next reservation request. < 0 : This row is full
+    /// Adjust _index for the next reservation request. < 0 : This row is full
     /// </summary>
     private void AdjustOffset()
     {
-        if (_offset == Seats.Count || Seats[_offset] == 'x')
-            // Check and reset _offset to the right-most empty seat
-            for (--_offset; _offset >= 0 && Seats[_offset] == 'x'; _offset--) ;
+        if (_index == Seats.Count || Seats[_index] == 'x')
+            // Check and reset _index to the right-most empty seat
+            for (--_index; _index >= 0 && Seats[_index] == 'x'; _index--) ;
     }
     /// <summary>
     /// Calculate the center-most offset of the beginning of seat assignment for the number of required tickets in this row
@@ -141,12 +141,12 @@ public class SeatRow : IDisposable
         0 1 2 3 4 5 6 7 8 9 10
                 x x			<= (11 - 2) / 2 = 4.5 (floor)     
         */
-        int size = EmptySeatsToTheRight(_offset);
+        int size = EmptySeatsToTheRight(_index);
         if (size > 1)
         {
             int _tickets = int.Min(size, tickets);
             int oddEven = (_tickets % 2) ^ (size % 2);
-            return _offset + ((oddEven == 0) ? ((size - _tickets) / 2) : (int)Math.Floor((size - _tickets) / 2.0));
+            return _index + ((oddEven == 0) ? ((size - _tickets) / 2) : (int)Math.Floor((size - _tickets) / 2.0));
         }
         else // size == 1
         {
@@ -158,11 +158,11 @@ public class SeatRow : IDisposable
                 x x x x x x x x
              */
             if (size == tickets)
-                return _offset;
-            /* Available seats: [0, _offset]
-             * Return the offset which could accomodate the min(_offset + 1, tickets)
+                return _index;
+            /* Available seats: [0, _index]
+             * Return the offset which could accomodate the min(_index + 1, tickets)
              */
-            return tickets >= _offset + 1 ? 0 : (_offset + 1) - tickets;
+            return tickets >= _index + 1 ? 0 : (_index + 1) - tickets;
         }
     }
     /// <summary>
@@ -172,15 +172,15 @@ public class SeatRow : IDisposable
     /// <returns>#tickets</returns>
     private int Tickets(int tickets)
     {
-        int size = EmptySeatsToTheRight(_offset);
+        int size = EmptySeatsToTheRight(_index);
         if (size == 1 && tickets > size)
         {
-            int i = _offset;
-            // Look for empty seats from _offset to the left
+            int i = _index;
+            // Look for empty seats from _index to the left
             for (; i >= 0 && Seats[i] == ' '; i--) ;
             if (i < 0)
                 i = 0;
-            size = _offset - i + 1;
+            size = _index - i + 1;
         }
         return int.Min(size, tickets);
     }
@@ -191,10 +191,10 @@ public class SeatRow : IDisposable
     /// <returns># empty seats to the right of offset</returns>
     private int EmptySeatsToTheRight(int offset)
     {
-        int i = _offset;
-        // Check if there is any empty seat to the left of _offset
+        int i = _index;
+        // Check if there is any empty seat to the left of _index
         for (; i < Seats.Count && Seats[i] == ' '; i++) ;
-        return i - _offset; // size = 1 means there is no empty seat to the left of _offset
+        return i - _index; // size = 1 means there is no empty seat to the left of _index
     }
 
     public void Dispose()

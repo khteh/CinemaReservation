@@ -109,7 +109,7 @@ public class SeatMap : IDisposable
         for (int i = _rows.Count - 1; i >= 0; i--)
         {
             List<char> row = new List<char>();
-            for (int j = 0; j < _rows[i].Seats.Count; j++)
+            //for (int j = 0; j < _rows[i].Seats.Count; j++)
         }
     }
     public void Dispose()

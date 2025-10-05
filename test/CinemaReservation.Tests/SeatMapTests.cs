@@ -35,7 +35,7 @@ public class SeatMapTests
     {
         SeatMap sm = new SeatMap(nameof(AvailableSeatCountTests), 10, 10);
         List<SeatRow> rows = (List<SeatRow>)_rowfield.GetValue(sm);
-        FieldInfo _field = typeof(SeatRow).GetField("_offset", BindingFlags.Instance | BindingFlags.NonPublic);
+        FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
 
         int seats = sm.SeatsAvailable();
         Assert.Equal(100, seats);
@@ -46,9 +46,9 @@ public class SeatMapTests
         Assert.Equal("GIC0000", reservation.Id);
         Assert.Equal(new Dictionary<int, List<int>>() { { 0, new List<int>() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } } }, reservation.Seats);
         Assert.Equal(0, rows[0].AvailableSeats());
-        // Validate _offset
-        int _offset = (int)_field.GetValue(rows[0]);
-        Assert.Equal(-1, _offset);
+        // Validate _index
+        int _index = (int)_field.GetValue(rows[0]);
+        Assert.Equal(-1, _index);
 
         reservation = sm.Reserve(15, string.Empty);
         Assert.NotNull(reservation);
@@ -67,18 +67,18 @@ public class SeatMapTests
                           */
                          { 2, new List<int>(){2, 3, 4, 5, 6 } },
                          }, reservation.Seats);
-        // Validate _offset
+        // Validate _index
         Assert.Equal(0, rows[0].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[0]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[0]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(0, rows[1].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[1]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[1]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(5, rows[2].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[2]);
-        Assert.Equal(7, _offset);
+        _index = (int)_field.GetValue(rows[2]);
+        Assert.Equal(7, _index);
 
         reservation = sm.Reserve(8, string.Empty);
         Assert.NotNull(reservation);
@@ -97,22 +97,22 @@ public class SeatMapTests
                           */
                          { 3, new List<int>(){2,3,4,5,6 } },
                          }, reservation.Seats);
-        // Validate _offset
+        // Validate _index
         Assert.Equal(0, rows[0].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[0]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[0]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(0, rows[1].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[1]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[1]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(2, rows[2].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[2]);
-        Assert.Equal(1, _offset);
+        _index = (int)_field.GetValue(rows[2]);
+        Assert.Equal(1, _index);
 
         Assert.Equal(5, rows[3].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[3]);
-        Assert.Equal(7, _offset);
+        _index = (int)_field.GetValue(rows[3]);
+        Assert.Equal(7, _index);
 
         reservation = sm.Reserve(7, string.Empty);
         Assert.NotNull(reservation);
@@ -136,33 +136,33 @@ public class SeatMapTests
                           */
                          { 4, new List<int>(){4,5 } },
                          }, reservation.Seats);
-        // Validate _offset
+        // Validate _index
         Assert.Equal(0, rows[0].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[0]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[0]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(0, rows[1].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[1]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[1]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(0, rows[2].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[2]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[2]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(2, rows[3].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[3]);
-        Assert.Equal(1, _offset);
+        _index = (int)_field.GetValue(rows[3]);
+        Assert.Equal(1, _index);
 
         Assert.Equal(8, rows[4].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[4]);
-        Assert.Equal(6, _offset);
+        _index = (int)_field.GetValue(rows[4]);
+        Assert.Equal(6, _index);
     }
     [Fact]
     public void SpecificSeatReservationTests()
     {
         SeatMap sm = new SeatMap(nameof(AvailableSeatCountTests), 10, 10);
         List<SeatRow> rows = (List<SeatRow>)_rowfield.GetValue(sm);
-        FieldInfo _field = typeof(SeatRow).GetField("_offset", BindingFlags.Instance | BindingFlags.NonPublic);
+        FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
 
         int seats = sm.SeatsAvailable();
         Assert.Equal(100, seats);
@@ -183,14 +183,14 @@ public class SeatMapTests
                          */
                             { 3, new List<int>() { 3, 4, 5 } }
                         }, reservation.Seats);
-        // Validate _offset
+        // Validate _index
         Assert.Equal(3, rows[2].AvailableSeats());
-        int _offset = (int)_field.GetValue(rows[2]);
-        Assert.Equal(2, _offset);
+        int _index = (int)_field.GetValue(rows[2]);
+        Assert.Equal(2, _index);
 
         Assert.Equal(7, rows[3].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[3]);
-        Assert.Equal(6, _offset);
+        _index = (int)_field.GetValue(rows[3]);
+        Assert.Equal(6, _index);
 
         reservation = sm.Reserve(15, "B04");
         Assert.NotNull(reservation);
@@ -219,22 +219,22 @@ public class SeatMapTests
                           */
                          { 4, new List<int>(){4 } },
                          }, reservation.Seats);
-        // Validate _offset
+        // Validate _index
         Assert.Equal(3, rows[1].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[1]);
-        Assert.Equal(2, _offset);
+        _index = (int)_field.GetValue(rows[1]);
+        Assert.Equal(2, _index);
 
         Assert.Equal(0, rows[2].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[2]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[2]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(3, rows[3].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[3]);
-        Assert.Equal(2, _offset);
+        _index = (int)_field.GetValue(rows[3]);
+        Assert.Equal(2, _index);
 
         Assert.Equal(9, rows[4].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[4]);
-        Assert.Equal(5, _offset);
+        _index = (int)_field.GetValue(rows[4]);
+        Assert.Equal(5, _index);
 
         reservation = sm.Reserve(13, "A04");
         Assert.NotNull(reservation);
@@ -258,22 +258,22 @@ public class SeatMapTests
                           */
                          { 3, new List<int>(){0,1,2 } },
                          }, reservation.Seats);
-        // Validate _offset
+        // Validate _index
         Assert.Equal(3, rows[0].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[0]);
-        Assert.Equal(2, _offset);
+        _index = (int)_field.GetValue(rows[0]);
+        Assert.Equal(2, _index);
 
         Assert.Equal(0, rows[1].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[1]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[1]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(0, rows[2].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[2]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[2]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(0, rows[3].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[3]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[3]);
+        Assert.Equal(-1, _index);
 
         // Default Reservation
         reservation = sm.Reserve(19, string.Empty);
@@ -303,33 +303,33 @@ public class SeatMapTests
                           */
                          { 6, new List<int>(){4 } },
                          }, reservation.Seats);
-        // Validate _offset
+        // Validate _index
         Assert.Equal(0, rows[0].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[0]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[0]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(0, rows[1].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[1]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[1]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(0, rows[2].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[2]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[2]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(0, rows[3].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[3]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[3]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(4, rows[4].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[4]);
-        Assert.Equal(3, _offset);
+        _index = (int)_field.GetValue(rows[4]);
+        Assert.Equal(3, _index);
 
         Assert.Equal(0, rows[5].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[5]);
-        Assert.Equal(-1, _offset);
+        _index = (int)_field.GetValue(rows[5]);
+        Assert.Equal(-1, _index);
 
         Assert.Equal(9, rows[6].AvailableSeats());
-        _offset = (int)_field.GetValue(rows[6]);
-        Assert.Equal(5, _offset);
+        _index = (int)_field.GetValue(rows[6]);
+        Assert.Equal(5, _index);
     }
 }

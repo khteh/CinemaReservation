@@ -4,7 +4,7 @@ namespace CinemaReservation.Tests;
 
 public class SeatRowReservationTests
 {
-    private FieldInfo _field = typeof(SeatRow).GetField("_offset", BindingFlags.Instance | BindingFlags.NonPublic);
+    private FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
     [Fact]
     public void ReserveWholeRowShouldPassTests()
     {
@@ -13,17 +13,17 @@ public class SeatRowReservationTests
         Assert.Equal(10, reserved.Count);
         Assert.Equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], reserved);
         Assert.Equal(0, row.AvailableSeats());
-        // Validate _offset
-        int _offset = (int)_field.GetValue(row);
-        Assert.Equal(-1, _offset);
+        // Validate _index
+        int _index = (int)_field.GetValue(row);
+        Assert.Equal(-1, _index);
 
         reserved = row.Reserve(1);
         Assert.Equal(0, reserved.Count);
         Assert.Empty(reserved);
         Assert.Equal(0, row.AvailableSeats());
-        // Validate _offset
-        _offset = (int)_field.GetValue(row);
-        Assert.Equal(-1, _offset);
+        // Validate _index
+        _index = (int)_field.GetValue(row);
+        Assert.Equal(-1, _index);
     }
     [Fact]
     public void ReserveSectionsShouldPassTests()
@@ -37,9 +37,9 @@ public class SeatRowReservationTests
         Assert.Equal(4, reserved.Count);
         Assert.Equal([3, 4, 5, 6], reserved);
         Assert.Equal(6, row.AvailableSeats());
-        // Validate _offset
-        int _offset = (int)_field.GetValue(row);
-        Assert.Equal(7, _offset);
+        // Validate _index
+        int _index = (int)_field.GetValue(row);
+        Assert.Equal(7, _index);
 
         /*
         0 1 2 3 4 5 6 7 8 9
@@ -49,9 +49,9 @@ public class SeatRowReservationTests
         Assert.Equal(2, reserved.Count);
         Assert.Equal([7, 8], reserved);
         Assert.Equal(4, row.AvailableSeats());
-        // Validate _offset
-        _offset = (int)_field.GetValue(row);
-        Assert.Equal(9, _offset);
+        // Validate _index
+        _index = (int)_field.GetValue(row);
+        Assert.Equal(9, _index);
 
         /*
         0 1 2 3 4 5 6 7 8 9
@@ -61,9 +61,9 @@ public class SeatRowReservationTests
         Assert.Equal(1, reserved.Count);
         Assert.Equal([9], reserved);
         Assert.Equal(3, row.AvailableSeats());
-        // Validate _offset
-        _offset = (int)_field.GetValue(row);
-        Assert.Equal(2, _offset);
+        // Validate _index
+        _index = (int)_field.GetValue(row);
+        Assert.Equal(2, _index);
 
         /*
         0 1 2 3 4 5 6 7 8 9
@@ -73,9 +73,9 @@ public class SeatRowReservationTests
         Assert.Equal(1, reserved.Count);
         Assert.Equal([2], reserved);
         Assert.Equal(2, row.AvailableSeats());
-        // Validate _offset
-        _offset = (int)_field.GetValue(row);
-        Assert.Equal(1, _offset);
+        // Validate _index
+        _index = (int)_field.GetValue(row);
+        Assert.Equal(1, _index);
 
         /*
         0 1 2 3 4 5 6 7 8 9
@@ -85,17 +85,17 @@ public class SeatRowReservationTests
         Assert.Equal(2, reserved.Count);
         Assert.Equal([0, 1], reserved);
         Assert.Equal(0, row.AvailableSeats());
-        // Validate _offset
-        _offset = (int)_field.GetValue(row);
-        Assert.Equal(-1, _offset);
+        // Validate _index
+        _index = (int)_field.GetValue(row);
+        Assert.Equal(-1, _index);
 
         reserved = row.Reserve(1);
         Assert.Equal(0, reserved.Count);
         Assert.Empty(reserved);
         Assert.Equal(0, row.AvailableSeats());
-        // Validate _offset
-        _offset = (int)_field.GetValue(row);
-        Assert.Equal(-1, _offset);
+        // Validate _index
+        _index = (int)_field.GetValue(row);
+        Assert.Equal(-1, _index);
     }
     [Fact]
     public void ReserveBiggerThanARowShouldPassTests()
@@ -105,17 +105,17 @@ public class SeatRowReservationTests
         Assert.Equal(10, reserved.Count);
         Assert.Equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], reserved);
         Assert.Equal(0, row.AvailableSeats());
-        // Validate _offset
-        int _offset = (int)_field.GetValue(row);
-        Assert.Equal(-1, _offset);
+        // Validate _index
+        int _index = (int)_field.GetValue(row);
+        Assert.Equal(-1, _index);
 
         reserved = row.Reserve(1);
         Assert.Equal(0, reserved.Count);
         Assert.Empty(reserved);
         Assert.Equal(0, row.AvailableSeats());
-        // Validate _offset
-        _offset = (int)_field.GetValue(row);
-        Assert.Equal(-1, _offset);
+        // Validate _index
+        _index = (int)_field.GetValue(row);
+        Assert.Equal(-1, _index);
     }
     [Fact]
     public void ReserveSpecificSeatShouldPassTests()
@@ -129,9 +129,9 @@ public class SeatRowReservationTests
         Assert.Equal(4, reserved.Count);
         Assert.Equal([2, 3, 4, 5], reserved);
         Assert.Equal(6, row.AvailableSeats());
-        // Validate _offset
-        int _offset = (int)_field.GetValue(row);
-        Assert.Equal(6, _offset);
+        // Validate _index
+        int _index = (int)_field.GetValue(row);
+        Assert.Equal(6, _index);
 
         /*
         0 1 2 3 4 5 6 7 8 9
@@ -141,9 +141,9 @@ public class SeatRowReservationTests
         Assert.Equal(3, reserved.Count);
         Assert.Equal([6, 7, 8], reserved);
         Assert.Equal(3, row.AvailableSeats());
-        // Validate _offset
-        _offset = (int)_field.GetValue(row);
-        Assert.Equal(9, _offset);
+        // Validate _index
+        _index = (int)_field.GetValue(row);
+        Assert.Equal(9, _index);
 
         /*
         0 1 2 3 4 5 6 7 8 9
@@ -153,9 +153,9 @@ public class SeatRowReservationTests
         Assert.Equal(1, reserved.Count);
         Assert.Equal([1], reserved);
         Assert.Equal(2, row.AvailableSeats());
-        // Validate _offset
-        _offset = (int)_field.GetValue(row);
-        Assert.Equal(9, _offset);
+        // Validate _index
+        _index = (int)_field.GetValue(row);
+        Assert.Equal(9, _index);
 
         /*
         0 1 2 3 4 5 6 7 8 9
@@ -165,8 +165,8 @@ public class SeatRowReservationTests
         Assert.Equal(2, reserved.Count);
         Assert.Equal([0, 9], reserved);
         Assert.Equal(0, row.AvailableSeats());
-        // Validate _offset
-        _offset = (int)_field.GetValue(row);
-        Assert.Equal(-1, _offset);
+        // Validate _index
+        _index = (int)_field.GetValue(row);
+        Assert.Equal(-1, _index);
     }
 }

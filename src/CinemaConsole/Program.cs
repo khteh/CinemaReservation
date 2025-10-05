@@ -1,6 +1,7 @@
 ﻿using CinemaReservation;
 using Microsoft.Extensions.Configuration;
 using System.CommandLine;
+using System.CommandLine.Help;
 using static System.Console;
 internal class Program
 {
@@ -33,12 +34,14 @@ internal class Program
             rootCommand.Options.Add(moviesOption);
             rootCommand.SetAction(parseResult =>
             {
+                bool handled = false;
                 if (parseResult.GetValue(moviesOption))
                 {
                     foreach (KeyValuePair<int, string> movie in _movies)
                         WriteLine($"{movie.Key}: {movie.Value}");
+                    handled = true;
                 }
-                return 0;
+                return handled ? 0 : new HelpAction().Invoke(parseResult);
             });
             Option<int> movieOption = new("--movie")
             {
@@ -85,7 +88,7 @@ internal class Program
     private void PrintSeats(SeatMap seatmap)
     {
         WriteLine("\t\tSCREEN\t\t");
-        foreach ()
+        //foreach ()
     }
     internal static void CheckReservation(string id)
     {
