@@ -21,6 +21,7 @@ public class Cinema
             _seatMap.Add(title, new SeatMap(_strategy, title, rows, seats));
         return _seatMap[title].SeatsAvailable();
     }
+    public int SeatsAvailable(string title) => _seatMap.ContainsKey(title) ? _seatMap[title].SeatsAvailable() : 0;
     public Reservation Reserve(string title, int tickets, string seat)
     {
         title = title.Trim();
@@ -35,5 +36,8 @@ public class Cinema
             return null;
         }
         return _seatMap[title_lower].Reserve(tickets, seat);
+    }
+    public void Confirm(string id)
+    {
     }
 }

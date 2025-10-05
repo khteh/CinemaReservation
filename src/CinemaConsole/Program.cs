@@ -10,21 +10,7 @@ public partial class Program
     {
         try
         {
-            string contentRootFull = Path.GetFullPath(Directory.GetCurrentDirectory());
-            string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Development";
-            // Configure and run the host
-            Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration(cfg =>
-                {
-                    cfg.SetBasePath(contentRootFull);
-                    cfg.AddJsonFile($"appsettings.{environment}.json", false, true);
-                    cfg.AddEnvironmentVariables().Build();
-                })
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services.AddTransient<ISeatAllocationStrategy, MiddleToRightStrategy>();
-                    services.AddSingleton<CinemaConsoleApp>(); // Register your main application class
-                })
+            CreateHostBuilder(args)
                 .Build()
                 .Services.GetRequiredService<CinemaConsoleApp>() // Resolve your main application class
                 .Run(args); // Execute your application logic
@@ -36,5 +22,21 @@ public partial class Program
             return -1;
         }
     }
+    internal static IHostBuilder CreateHostBuilder(string[] args)
+    {
+        string contentRootFull = Path.GetFullPath(Directory.GetCurrentDirectory());
+        string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Development";
+        return Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration(cfg =>
+            {
+                cfg.SetBasePath(contentRootFull);
+                cfg.AddJsonFile($"appsettings.{environment}.json", false, true);
+                cfg.AddEnvironmentVariables().Build();
+            })
+            .ConfigureServices((hostContext, services) =>
+            {
+                services.AddTransient<ISeatAllocationStrategy, MiddleToRightStrategy>();
+                services.AddSingleton<CinemaConsoleApp>(); // Register your main application class
+            });
+    }
 }
-public partial class Program { } // so you can reference it from tests

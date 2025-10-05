@@ -5,32 +5,73 @@ namespace CinemaConsole;
 
 public class CinemaConsoleApp
 {
+    private Cinema _cinema;
     private readonly ISeatAllocationStrategy _strategy;
-    private Dictionary<int, string> _movies = new Dictionary<int, string>() {
-        { 1, "Sex and the City"},
-        { 2, "The Avengers"},
-        { 3, "Mission Impossible - Death Reckoning"}
-    };
-    private Dictionary<string, SeatMap> _cinemas;
     private Dictionary<string, Reservation> _reservations = new Dictionary<string, Reservation>();
     public CinemaConsoleApp(ISeatAllocationStrategy strategy)
     {
         _strategy = strategy;
-        _cinemas = new Dictionary<string, SeatMap>() {
-                { "Sex and the City", new SeatMap(strategy, "Sex and the City")},
-                { "The Avengers", new SeatMap(strategy, "The Avengers")},
-                { "Mission Impossible - Death Reckoning", new SeatMap(strategy, "Mission Impossible - Death Reckoning")}
-            };
+        _cinema = new Cinema(_strategy);
     }
     public void Run(string[] args)
     {
-        WriteLine($"Please define movie title and seat map in [Title] [Rows] [SeatsPerRow] format:\n>");
-        string input = ReadLine();
-        if (!string.IsNullOrEmpty(input))
+        bool leave = false;
+        string title = string.Empty;
+        int rows = -1, seats = -1;
+        bool movieCreated = false;
+        while (!leave)
         {
-
-            WriteLine($"Welcome to GIC Cinemas");
-            WriteLine($"[1] Book tickets for");
+            if (string.IsNullOrEmpty(title) || rows < 0 || seats < 0 || !movieCreated)
+            {
+                WriteLine($"Please define movie title and seat map in [Title] [Rows] [SeatsPerRow] format:");
+                Write("> ");
+                string input = ReadLine();
+                if (!string.IsNullOrEmpty(input))
+                {
+                    string[] values = input.Split(' ');
+                    title = values[0].Trim();
+                    rows = int.Parse(values[1].Trim());
+                    seats = int.Parse(values[2].Trim());
+                }
+                if (!string.IsNullOrEmpty(title) && rows > 0 && rows <= 26 && seats > 0 && seats <= 50)
+                {
+                    _cinema.CreateMovie(title.ToLower(), rows, seats);
+                    movieCreated = true;
+                }
+            }
+            else
+            {
+                WriteLine("Welcome to GIC Cinemas!");
+                WriteLine($"[1] Book tickets for {title} ({_cinema.SeatsAvailable(title.ToLower())} seats available)");
+                WriteLine("[2] Check reservations");
+                WriteLine("[3] Exit");
+                WriteLine("Please enter your selection:");
+                Write("> ");
+                string input = ReadLine();
+                if (!string.IsNullOrEmpty(input))
+                {
+                    switch (input)
+                    {
+                        case "1":
+                            WriteLine("Enter #tickets to purchase. [ENTER to return to main menu]:");
+                            Write("> ");
+                            input = ReadLine();
+                            if (!string.IsNullOrEmpty(input))
+                            {
+                                int tickets = int.Parse(input.Trim());
+                                if (tickets > 0 && tickets <= _cinema.SeatsAvailable(title.ToLower()))
+                                {
+                                }
+                            }
+                            break;
+                        case "2":
+                            break;
+                        case "3":
+                            leave = true;
+                            break;
+                    }
+                }
+            }
         }
     }
     private void PrintSeats(SeatMap seatmap)
@@ -58,12 +99,6 @@ public class CinemaConsoleApp
     {
         try
         {
-            if (_movies.ContainsKey(movie))
-            {
-                WriteLine($"{nameof(Reserve)} Reserving movie '{_movies[movie]}' for {tickets} tickets starting from seat '{seat}'");
-            }
-            else
-                WriteLine($"{nameof(Reserve)} Invalid movie id: {movie}!");
         }
         catch (Exception e)
         {

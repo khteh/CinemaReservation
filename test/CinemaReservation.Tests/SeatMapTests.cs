@@ -3,14 +3,11 @@ using System.Reflection;
 
 namespace CinemaReservation.Tests;
 
-public class SeatMapTests
+public class SeatMapTests : IClassFixture<TestFixture>
 {
     private ISeatAllocationStrategy _strategy;
     private FieldInfo _rowfield = typeof(SeatMap).GetField("_rows", BindingFlags.Instance | BindingFlags.NonPublic);
-    public SeatMapTests()
-    {
-        _strategy = new MiddleToRightStrategy();
-    }
+    public SeatMapTests(TestFixture testFixture) => _strategy = testFixture.Strategy;
     [Fact]
     public void AvailableSeatCountTests()
     {

@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 namespace CinemaReservation.Tests;
 
-public class SeatRegexTests
+public class SeatRegexTests : IClassFixture<TestFixture>
 {
     private readonly ITestOutputHelper _output;
     private ISeatAllocationStrategy _strategy;
@@ -11,10 +11,10 @@ public class SeatRegexTests
     private readonly SeatMap _seatMap;
     private FieldInfo _field = typeof(SeatMap).GetField("_seatsPerRow", BindingFlags.Instance | BindingFlags.NonPublic);
     private FieldInfo _rowsField = typeof(SeatMap).GetField("_rows", BindingFlags.Instance | BindingFlags.NonPublic);
-    public SeatRegexTests(ITestOutputHelper output)
+    public SeatRegexTests(ITestOutputHelper output, TestFixture testFixture)
     {
         _output = output;
-        _strategy = new MiddleToRightStrategy();
+        _strategy = testFixture.Strategy;
         _seatMap = new SeatMap(_strategy, "Test Movie", 10, 10);
     }
     [Theory]
