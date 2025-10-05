@@ -1,14 +1,21 @@
-﻿using System.Reflection;
+﻿using CinemaReservation.Strategies;
+using System.Reflection;
 
 namespace CinemaReservation.Tests;
 
 public class SeatMapTests
 {
+    private ISeatAllocationStrategy _strategy;
     private FieldInfo _rowfield = typeof(SeatMap).GetField("_rows", BindingFlags.Instance | BindingFlags.NonPublic);
+    public SeatMapTests()
+    {
+        _strategy = new MiddleToRightStrategy();
+    }
     [Fact]
     public void AvailableSeatCountTests()
     {
-        SeatMap sm = new SeatMap(nameof(AvailableSeatCountTests), 10, 10);
+        _strategy = new MiddleToRightStrategy();
+        SeatMap sm = new SeatMap(_strategy, nameof(AvailableSeatCountTests), 10, 10);
         Assert.Equal(100, sm.SeatsAvailable());
     }
     [Theory]
@@ -23,7 +30,7 @@ public class SeatMapTests
     [InlineData("E11", -1, -1)] // col should be <= 10
     public void ParseSeatTests(string str, int row, int seat)
     {
-        SeatMap seatMap = new SeatMap(nameof(ParseSeatTests), 10, 10);
+        SeatMap seatMap = new SeatMap(_strategy, nameof(ParseSeatTests), 10, 10);
         MethodInfo _parseSeat = seatMap.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(x => x.Name == "ParseSeat" && x.IsPrivate).First();
         Assert.NotNull(_parseSeat);
         (int row, int col) result = ((int row, int col))_parseSeat.Invoke(seatMap, new object[] { str });
@@ -33,7 +40,7 @@ public class SeatMapTests
     [Fact]
     public void DefaultSeatReservationTests()
     {
-        SeatMap sm = new SeatMap(nameof(AvailableSeatCountTests), 10, 10);
+        SeatMap sm = new SeatMap(_strategy, nameof(AvailableSeatCountTests), 10, 10);
         List<SeatRow> rows = (List<SeatRow>)_rowfield.GetValue(sm);
         FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -160,7 +167,7 @@ public class SeatMapTests
     [Fact]
     public void SpecificSeatReservationTests()
     {
-        SeatMap sm = new SeatMap(nameof(AvailableSeatCountTests), 10, 10);
+        SeatMap sm = new SeatMap(_strategy, nameof(AvailableSeatCountTests), 10, 10);
         List<SeatRow> rows = (List<SeatRow>)_rowfield.GetValue(sm);
         FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
 

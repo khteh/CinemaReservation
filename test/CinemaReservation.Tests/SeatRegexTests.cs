@@ -1,3 +1,4 @@
+using CinemaReservation.Strategies;
 using System.Reflection;
 using System.Text.RegularExpressions;
 namespace CinemaReservation.Tests;
@@ -5,11 +6,17 @@ namespace CinemaReservation.Tests;
 public class SeatRegexTests
 {
     private readonly ITestOutputHelper _output;
+    private ISeatAllocationStrategy _strategy;
     private readonly Regex _regex = new Regex(@"^([a-zA-Z]{1})([0-9]{2})$");
-    private readonly SeatMap _seatMap = new SeatMap("Test Movie", 10, 10);
+    private readonly SeatMap _seatMap;
     private FieldInfo _field = typeof(SeatMap).GetField("_seatsPerRow", BindingFlags.Instance | BindingFlags.NonPublic);
     private FieldInfo _rowsField = typeof(SeatMap).GetField("_rows", BindingFlags.Instance | BindingFlags.NonPublic);
-    public SeatRegexTests(ITestOutputHelper output) => _output = output;
+    public SeatRegexTests(ITestOutputHelper output)
+    {
+        _output = output;
+        _strategy = new MiddleToRightStrategy();
+        _seatMap = new SeatMap(_strategy, "Test Movie", 10, 10);
+    }
     [Theory]
     [InlineData(1, "A05", 0, 5)]
     [InlineData(0, "AB05", -1, -1)]

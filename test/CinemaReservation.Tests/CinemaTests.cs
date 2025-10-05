@@ -1,14 +1,20 @@
-﻿using System.Reflection;
+﻿using CinemaReservation.Strategies;
+using System.Reflection;
 namespace CinemaReservation.Tests;
 
 public class CinemaTests
 {
+    private ISeatAllocationStrategy _strategy;
     private FieldInfo _seatMapField = typeof(Cinema).GetField("_seatMap", BindingFlags.Instance | BindingFlags.NonPublic);
+    public CinemaTests()
+    {
+        _strategy = new MiddleToRightStrategy();
+    }
     [Fact]
     public void CreateMovieTests()
     {
         string title = "Sex and the City";
-        Cinema cinema = new Cinema();
+        Cinema cinema = new Cinema(_strategy);
         Dictionary<string, SeatMap> seatMap = (Dictionary<string, SeatMap>)_seatMapField.GetValue(cinema);
         cinema.CreateMovie(title, 10, 10);
         Assert.NotNull(seatMap);
@@ -17,7 +23,7 @@ public class CinemaTests
     [Fact]
     public void InvalidArgumentsShouldThrowTests()
     {
-        Cinema cinema = new Cinema();
+        Cinema cinema = new Cinema(_strategy);
         //act
         Action act1 = () => cinema.Reserve(nameof(InvalidArgumentsShouldThrowTests), 10, string.Empty);
         //assert
@@ -41,7 +47,7 @@ public class CinemaTests
     public void DefaultSeatReservationTests()
     {
         string title = "The Avengers";
-        Cinema cinema = new Cinema();
+        Cinema cinema = new Cinema(_strategy);
         Dictionary<string, SeatMap> seatMap = (Dictionary<string, SeatMap>)_seatMapField.GetValue(cinema);
         cinema.CreateMovie(title, 10, 10);
         Assert.NotNull(seatMap);
@@ -106,7 +112,7 @@ public class CinemaTests
     public void SpecificSeatReservationTests()
     {
         string title = "Mission Impossible - Death Reckoning";
-        Cinema cinema = new Cinema();
+        Cinema cinema = new Cinema(_strategy);
         Dictionary<string, SeatMap> seatMap = (Dictionary<string, SeatMap>)_seatMapField.GetValue(cinema);
         cinema.CreateMovie(title, 10, 10);
         Assert.NotNull(seatMap);

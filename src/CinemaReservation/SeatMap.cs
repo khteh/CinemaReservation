@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using CinemaReservation.Strategies;
+using System.Text.RegularExpressions;
 using static System.Console;
 namespace CinemaReservation;
 
@@ -11,7 +12,7 @@ public class SeatMap : IDisposable
     private List<SeatRow> _rows;
     private Dictionary<string, Reservation> _reservations;
     public string Title { get => _title; }
-    public SeatMap(string title, int rows = 26, int seats = 50)
+    public SeatMap(ISeatAllocationStrategy strategy, string title, int rows = 26, int seats = 50)
     {
         if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
         if (rows < 1 || rows > 26) throw new ArgumentOutOfRangeException(nameof(rows));
@@ -20,7 +21,7 @@ public class SeatMap : IDisposable
         _rows = new List<SeatRow>(); // _rows: [0, 25], _cols: [1, 50]
         _reservations = new Dictionary<string, Reservation>();
         for (int i = 0; i < rows; i++)
-            _rows.Add(new SeatRow(seats));
+            _rows.Add(new SeatRow(strategy, seats));
         _seatsPerRow = _rows.Any() ? _rows.First().Seats.Count : 0;
     }
     public int SeatsAvailable() => _rows.AsParallel().Sum(r => r.AvailableSeats());
