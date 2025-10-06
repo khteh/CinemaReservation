@@ -2,6 +2,14 @@
 
 An ASP.NET 9.0 console application for cinema movie tickets reservation and management.
 
+## Class Diagram
+
+![Class Diagram](./CinemaReservation_ClassDiagram.jpg?raw=true "Class Diagram")
+
+## Sequence Diagram
+
+![Sequence Diagram](./CinemaReservation_SequenceDiagram.jpg?raw=true "Sequence Diagram")
+
 ## Prerequisites
 
 ### Windows
