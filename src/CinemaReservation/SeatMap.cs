@@ -1,4 +1,4 @@
-﻿using CinemaReservation.Strategies;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 namespace CinemaReservation;
@@ -13,9 +13,9 @@ public class SeatMap : IDisposable
     private Dictionary<string, Reservation> _reservations;
     private readonly ILogger<SeatMap> _logger;
     public string Title { get => _title; }
-    public SeatMap(ILoggerFactory logger, ISeatAllocationStrategy strategy, string title, int rows = 26, int seats = 50)
+    public SeatMap(IServiceProvider serviceProvider, ILogger<SeatMap> logger, string title, int rows = 26, int seats = 50)
     {
-        _logger = logger.CreateLogger<SeatMap>();
+        _logger = logger;
         if (string.IsNullOrEmpty(title.Trim())) throw new ArgumentNullException(nameof(title));
         if (rows < 1 || rows > 26) throw new ArgumentOutOfRangeException(nameof(rows));
         if (seats < 1 || seats > 50) throw new ArgumentOutOfRangeException(nameof(seats));
@@ -23,7 +23,7 @@ public class SeatMap : IDisposable
         _rows = new List<SeatRow>(); // _rows: [0, 25], _cols: [1, 50]
         _reservations = new Dictionary<string, Reservation>();
         for (int i = 0; i < rows; i++)
-            _rows.Add(new SeatRow(logger.CreateLogger<SeatRow>(), strategy, seats));
+            _rows.Add((SeatRow)ActivatorUtilities.CreateInstance(serviceProvider, typeof(SeatRow), new object[] { seats }));
         _seatsPerRow = _rows.Any() ? _rows.First().Seats.Count : 0;
     }
     public int SeatsAvailable() => _rows.AsParallel().Sum(r => r.AvailableSeats());

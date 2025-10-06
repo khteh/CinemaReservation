@@ -1,24 +1,16 @@
-﻿using CinemaReservation.Strategies;
-using Microsoft.Extensions.Logging;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace CinemaReservation.Tests;
 
 public class SeatMapTests : IClassFixture<TestFixture>
 {
-    private readonly ISeatAllocationStrategy _strategy;
     private FieldInfo _rowfield = typeof(SeatMap).GetField("_rows", BindingFlags.Instance | BindingFlags.NonPublic);
-    private readonly ILoggerFactory _logger;
-    public SeatMapTests(TestFixture testFixture)
-    {
-        //_logger = new Mock<ILogger<SeatMap>>().Object;
-        _logger = testFixture.Host.Services.GetService<ILoggerFactory>();
-        _strategy = testFixture.Strategy;
-    }
+    private readonly IServiceProvider _serviceProvider;
+    public SeatMapTests(TestFixture testFixture) => _serviceProvider = testFixture.Host.Services;
     [Fact]
     public void AvailableSeatCountTests()
     {
-        SeatMap sm = new SeatMap(_logger, _strategy, nameof(AvailableSeatCountTests), 10, 10);
+        SeatMap sm = (SeatMap)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatMap), new object[] { nameof(AvailableSeatCountTests), 10, 10 });
         Assert.Equal(100, sm.SeatsAvailable());
     }
     [Theory]
@@ -33,17 +25,17 @@ public class SeatMapTests : IClassFixture<TestFixture>
     [InlineData("E11", -1, -1)] // col should be <= 10
     public void ParseSeatTests(string str, int row, int seat)
     {
-        SeatMap seatMap = new SeatMap(_logger, _strategy, nameof(ParseSeatTests), 10, 10);
-        MethodInfo _parseSeat = seatMap.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(x => x.Name == "ParseSeat" && x.IsPrivate).First();
+        SeatMap sm = (SeatMap)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatMap), new object[] { nameof(AvailableSeatCountTests), 10, 10 });
+        MethodInfo _parseSeat = sm.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(x => x.Name == "ParseSeat" && x.IsPrivate).First();
         Assert.NotNull(_parseSeat);
-        (int row, int col) result = ((int row, int col))_parseSeat.Invoke(seatMap, new object[] { str });
+        (int row, int col) result = ((int row, int col))_parseSeat.Invoke(sm, new object[] { str });
         Assert.Equal(row, result.row);
         Assert.Equal(seat, result.col);
     }
     [Fact]
     public void ReservationWithoutConfirmationTests()
     {
-        SeatMap sm = new SeatMap(_logger, _strategy, nameof(AvailableSeatCountTests), 10, 10);
+        SeatMap sm = (SeatMap)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatMap), new object[] { nameof(AvailableSeatCountTests), 10, 10 });
         List<SeatRow> rows = (List<SeatRow>)_rowfield.GetValue(sm);
         FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -63,7 +55,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
     [Fact]
     public void DefaultSeatReservationTests()
     {
-        SeatMap sm = new SeatMap(_logger, _strategy, nameof(AvailableSeatCountTests), 10, 10);
+        SeatMap sm = (SeatMap)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatMap), new object[] { nameof(AvailableSeatCountTests), 10, 10 });
         List<SeatRow> rows = (List<SeatRow>)_rowfield.GetValue(sm);
         FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
         List<List<char>> map = new List<List<char>>();
@@ -247,7 +239,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
     public void SpecificSeatReservationTests()
     {
         List<List<char>> map = new List<List<char>>();
-        SeatMap sm = new SeatMap(_logger, _strategy, nameof(AvailableSeatCountTests), 10, 10);
+        SeatMap sm = (SeatMap)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatMap), new object[] { nameof(AvailableSeatCountTests), 10, 10 });
         List<SeatRow> rows = (List<SeatRow>)_rowfield.GetValue(sm);
         FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
 

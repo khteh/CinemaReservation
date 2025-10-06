@@ -36,7 +36,6 @@ public class SeatRow : IDisposable
             _logger.LogError($"{nameof(Reserve)}: No available seats in this row!");
             return seats;
         }
-        //_index = _strategy.Allocate(_index, tickets, Seats, seats); Pending confirmation
         List<char> _seats = new(Seats);
         _strategy.Allocate(index, tickets, _seats, seats);
         return seats;
@@ -56,7 +55,6 @@ public class SeatRow : IDisposable
             _logger.LogError($"{nameof(Reserve)}: No available seats in this row!");
             return seats;
         }
-        //_index = _strategy.Allocate(seat, _index, tickets, Seats, seats); pending confirmation
         List<char> _seats = new(Seats);
         _strategy.Allocate(seat, index, tickets, _seats, seats);
         return seats;

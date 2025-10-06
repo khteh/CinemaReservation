@@ -1,18 +1,16 @@
-﻿using CinemaReservation.Strategies;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 namespace CinemaReservation;
 
 public class Cinema
 {
-    private readonly ISeatAllocationStrategy _strategy;
     private Dictionary<string, SeatMap> _seatMap;
     private readonly ILogger<Cinema> _logger;
-    private readonly ILoggerFactory _loggerFactory;
-    public Cinema(ILoggerFactory logger, ISeatAllocationStrategy strategy)
+    private readonly IServiceProvider _serviceProvider;
+    public Cinema(IServiceProvider serviceProvider, ILogger<Cinema> logger)
     {
-        _loggerFactory = logger;
-        _logger = logger.CreateLogger<Cinema>();
-        _strategy = strategy;
+        _serviceProvider = serviceProvider;
+        _logger = logger;
         _seatMap = new Dictionary<string, SeatMap>();
     }
     public int CreateMovie(string title, int rows, int seats)
@@ -22,7 +20,7 @@ public class Cinema
         if (rows < 0) throw new ArgumentOutOfRangeException(nameof(rows));
         if (seats < 0) throw new ArgumentOutOfRangeException(nameof(seats));
         if (!_seatMap.ContainsKey(title))
-            _seatMap.Add(title, new SeatMap(_loggerFactory, _strategy, title, rows, seats));
+            _seatMap.Add(title, (SeatMap)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatMap), new object[] { title, rows, seats }));
         return _seatMap[title].SeatsAvailable();
     }
     public int SeatsAvailable(string title) => _seatMap.ContainsKey(title) ? _seatMap[title].SeatsAvailable() : 0;

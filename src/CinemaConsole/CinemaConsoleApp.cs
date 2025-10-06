@@ -1,6 +1,7 @@
 ﻿using CinemaReservation;
 using CinemaReservation.Strategies;
 using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 using static System.Console;
 namespace CinemaConsole;
 
@@ -10,6 +11,7 @@ public class CinemaConsoleApp
     private readonly ISeatAllocationStrategy _strategy;
     private Dictionary<string, Reservation> _reservations = new Dictionary<string, Reservation>();
     private readonly ILogger<CinemaConsoleApp> _logger;
+    private readonly Regex _regex = new Regex(@"^([a-zA-Z]{1})([0-9]{2})$");
     public CinemaConsoleApp(ISeatAllocationStrategy strategy, ILogger<CinemaConsoleApp> logger, Cinema cinema)
     {
         _logger = logger;
@@ -110,6 +112,37 @@ public class CinemaConsoleApp
             }
         }
     }
+#if false
+    /// <summary>
+    /// Parse the input seat request string to it's corresponding row: [0, 25], cols: [1, min(_seatsPerRow , 50)]
+    /// </summary>
+    /// <param name="seat"></param>
+    /// <returns></returns>
+    private (int, int) ParseSeat(string seat)
+    {
+        int row = -1, col = -1; // _rows: [0, 25], _cols: [1, min(_seatsPerRow , 50)]
+        MatchCollection matches = _regex.Matches(seat);
+        _logger.LogDebug($"{matches.Count} matches");
+        if (matches.Count > 0)
+        {
+            /* Report on each match.
+             * If a match is found, information about this part of the matching string can be retrieved from the second Group object in the GroupCollection object returned by the Match.Groups property. 
+             * The first element in the collection represents the entire match.
+             */
+            int _row = matches[0].Groups[1].Value.ToLower()[0] - 'a';
+            if (Int32.TryParse(matches[0].Groups[2].Value, out int _col))
+            {
+                _logger.LogDebug($"{nameof(ParseSeat)} row: {_row}/{_rows.Count}, col: {_col}/{int.Min(_seatsPerRow, 50)}");
+                if (_row >= 0 && _row < int.Min(_rows.Count, 26) && _col >= 1 && _col <= int.Min(_seatsPerRow, 50))
+                {
+                    row = _row;
+                    col = _col;
+                }
+            }
+        }
+        return (row, col);
+    }
+#endif
     private void CheckReservation(string id)
     {
         try

@@ -1,24 +1,16 @@
-﻿using CinemaReservation.Strategies;
-using Microsoft.Extensions.Logging;
-using Moq;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace CinemaReservation.Tests;
 
 public class SeatRowReservationTests : IClassFixture<TestFixture>
 {
-    private readonly ISeatAllocationStrategy _strategy;
-    private readonly ILogger<SeatRow> _logger;
+    private readonly IServiceProvider _serviceProvider;
     private FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
-    public SeatRowReservationTests(TestFixture testFixture)
-    {
-        _logger = new Mock<ILogger<SeatRow>>().Object;
-        _strategy = testFixture.Strategy;
-    }
+    public SeatRowReservationTests(TestFixture testFixture) => _serviceProvider = testFixture.Host.Services;
     [Fact]
     public void ReservationWithoutConfirmationTests()
     {
-        SeatRow row = new SeatRow(_logger, _strategy, 10);
+        SeatRow row = (SeatRow)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatRow), new object[] { 10 });
         List<int> reserved = row.Reserve(10);
         Assert.Equal(10, reserved.Count);
         Assert.Equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], reserved);
@@ -30,7 +22,7 @@ public class SeatRowReservationTests : IClassFixture<TestFixture>
     [Fact]
     public void ReserveWholeRowShouldPassTests()
     {
-        SeatRow row = new SeatRow(_logger, _strategy, 10);
+        SeatRow row = (SeatRow)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatRow), new object[] { 10 });
         List<int> reserved = row.Reserve(10);
         Assert.Equal(10, reserved.Count);
         Assert.Equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], reserved);
@@ -54,7 +46,7 @@ public class SeatRowReservationTests : IClassFixture<TestFixture>
         0 1 2 3 4 5 6 7 8 9
               x x x x		<= (10 - 4) / 2 = 3
         */
-        SeatRow row = new SeatRow(_logger, _strategy, 10);
+        SeatRow row = (SeatRow)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatRow), new object[] { 10 });
         List<int> reserved = row.Reserve(4);
         Assert.Equal(4, reserved.Count);
         Assert.Equal([3, 4, 5, 6], reserved);
@@ -126,7 +118,7 @@ public class SeatRowReservationTests : IClassFixture<TestFixture>
     [Fact]
     public void ReserveBiggerThanARowShouldPassTests()
     {
-        SeatRow row = new SeatRow(_logger, _strategy, 10);
+        SeatRow row = (SeatRow)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatRow), new object[] { 10 });
         List<int> reserved = row.Reserve(11);
         Assert.Equal(10, reserved.Count);
         Assert.Equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], reserved);
@@ -150,7 +142,7 @@ public class SeatRowReservationTests : IClassFixture<TestFixture>
         0 1 2 3 4 5 6 7 8 9
             x x x x
          */
-        SeatRow row = new SeatRow(_logger, _strategy, 10);
+        SeatRow row = (SeatRow)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatRow), new object[] { 10 });
         List<int> reserved = row.Reserve(2, 4);
         Assert.Equal(4, reserved.Count);
         Assert.Equal([2, 3, 4, 5], reserved);
