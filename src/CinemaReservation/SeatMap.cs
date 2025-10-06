@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using CinemaReservation.Strategies;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 namespace CinemaReservation;
 
@@ -8,11 +9,13 @@ public class SeatMap : IDisposable
     private int _runningCount = 0;
     private List<SeatRow> _rows;
     private Dictionary<string, Reservation> _reservations;
+    private readonly IRowAllocationStrategy _strategy;
     private readonly ILogger<SeatMap> _logger;
     public string Title { get => _title; }
-    public SeatMap(IServiceProvider serviceProvider, ILogger<SeatMap> logger, string title, int rows = 26, int seats = 50)
+    public SeatMap(IServiceProvider serviceProvider, ILogger<SeatMap> logger, IRowAllocationStrategy strategy, string title, int rows = 26, int seats = 50)
     {
         _logger = logger;
+        _strategy = strategy;
         if (string.IsNullOrEmpty(title.Trim())) throw new ArgumentNullException(nameof(title));
         if (rows < 1 || rows > 26) throw new ArgumentOutOfRangeException(nameof(rows));
         if (seats < 1 || seats > 50) throw new ArgumentOutOfRangeException(nameof(seats));
@@ -29,7 +32,7 @@ public class SeatMap : IDisposable
     /// <param name="tickets"></param>
     /// <param name="row"></param>
     /// <param name="seat"></param>
-    /// <returns></returns>
+    /// <returns>Reservation</returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     /// <exception cref="InvalidOperationException"></exception>
     public Reservation Reserve(int tickets, int row = -1, int seat = -1)
@@ -55,19 +58,7 @@ public class SeatMap : IDisposable
         }
         else
             row = 0;
-        /* Default seats reservation.
-         * Back row, middle seats.
-         */
-        for (int i = row; i < _rows.Count && tickets > 0; i++)
-            if (_rows[i].AvailableSeats() > 0)
-            {
-                List<int> reserved = _rows[i].Reserve(tickets);
-                if (reserved.Any())
-                {
-                    tickets -= reserved.Count;
-                    seats[i] = reserved;
-                }
-            }
+        tickets = _strategy.Allocate(row, tickets, _rows, seats);
         if (tickets > 0)
             throw new InvalidOperationException($"{nameof(Reserve)} Failed to reserve {tickets} remaining seats!");
         string id = $"GIC{_runningCount.ToString("D4")}";

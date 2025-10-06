@@ -220,7 +220,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
     public void SpecificSeatReservationTests()
     {
         List<List<char>> map = new List<List<char>>();
-        SeatMap sm = (SeatMap)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatMap), new object[] { nameof(AvailableSeatCountTests), 10, 10 });
+        SeatMap sm = (SeatMap)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatMap), new object[] { nameof(SpecificSeatReservationTests), 10, 10 });
         List<SeatRow> rows = (List<SeatRow>)_rowfield.GetValue(sm);
         FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
 

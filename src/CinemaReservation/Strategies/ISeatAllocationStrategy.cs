@@ -1,5 +1,9 @@
 ﻿namespace CinemaReservation.Strategies;
 
+/// <summary>
+/// Strategy pattern to allocate seats in a specific row.
+/// Used by SeatRow.Reserve to determine the best seats to reserve #tickets for.
+/// </summary>
 public interface ISeatAllocationStrategy
 {
     /// <summary>

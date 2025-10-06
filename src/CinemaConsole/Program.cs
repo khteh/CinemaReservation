@@ -39,6 +39,7 @@ public partial class Program
             .ConfigureServices((hostContext, services) =>
             {
                 services.AddTransient<ISeatAllocationStrategy, MiddleToRightStrategy>();
+                services.AddTransient<IRowAllocationStrategy, BackRowAllocationStrategy>();
                 services.AddTransient<Cinema>(); // Register your main application class
                 services.AddSingleton<CinemaConsoleApp>(); // Register your main application class
             })

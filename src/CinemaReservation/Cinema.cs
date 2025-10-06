@@ -24,6 +24,16 @@ public class Cinema
         return _seatMap[title].SeatsAvailable();
     }
     public int SeatsAvailable(string title) => _seatMap.ContainsKey(title) ? _seatMap[title].SeatsAvailable() : 0;
+    /// <summary>
+    /// Reserve tickets for movie "title", starting from (row, seat) using 0-based index.
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="tickets"></param>
+    /// <param name="row"></param>
+    /// <param name="seat"></param>
+    /// <returns>Reservation</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     public Reservation Reserve(string title, int tickets, int row = -1, int seat = -1)
     {
         title = title.Trim();
