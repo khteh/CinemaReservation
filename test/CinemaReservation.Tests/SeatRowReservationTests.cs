@@ -154,7 +154,7 @@ public class SeatRowReservationTests : IClassFixture<TestFixture>
 
         /*
         0 1 2 3 4 5 6 7 8 9
-            x x x x x x x
+            x x x x # # #
          */
         reserved = row.Reserve(4, 3);
         Assert.Equal(3, reserved.Count);
@@ -167,24 +167,23 @@ public class SeatRowReservationTests : IClassFixture<TestFixture>
 
         /*
         0 1 2 3 4 5 6 7 8 9
-          x x x x x x x x
+          # x x x x x x x #
          */
-        reserved = row.Reserve(1, 1);
-        Assert.Single(reserved);
-        Assert.Equal([1], reserved);
+        reserved = row.Reserve(1, 2);
+        Assert.Equal([1, 9], reserved);
         row.Confirm(reserved);
-        Assert.Equal(2, row.AvailableSeats());
+        Assert.Equal(1, row.AvailableSeats());
         // Validate _index
         _index = (int)_field.GetValue(row);
-        Assert.Equal(9, _index);
+        Assert.Equal(0, _index);
 
         /*
         0 1 2 3 4 5 6 7 8 9
-        x x x x x x x x x x
+        # x x x x x x x x x
          */
         reserved = row.Reserve(0, 3);
-        Assert.Equal(2, reserved.Count);
-        Assert.Equal([0, 9], reserved);
+        Assert.Single(reserved);
+        Assert.Equal([0], reserved);
         row.Confirm(reserved);
         Assert.Equal(0, row.AvailableSeats());
         // Validate _index
