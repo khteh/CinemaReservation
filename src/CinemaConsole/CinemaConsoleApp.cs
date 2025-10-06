@@ -12,6 +12,7 @@ public class CinemaConsoleApp
     private Dictionary<string, Reservation> _reservations = new Dictionary<string, Reservation>();
     private readonly ILogger<CinemaConsoleApp> _logger;
     private readonly Regex _regex = new Regex(@"^([a-zA-Z]{1})([0-9]{2})$");
+    private int rows = -1, seats = -1;
     public CinemaConsoleApp(ISeatAllocationStrategy strategy, ILogger<CinemaConsoleApp> logger, Cinema cinema)
     {
         _logger = logger;
@@ -22,7 +23,6 @@ public class CinemaConsoleApp
     {
         bool leave = false;
         string title = string.Empty, title_lower = string.Empty;
-        int rows = -1, seats = -1;
         bool movieCreated = false;
         while (!leave)
         {
@@ -62,8 +62,10 @@ public class CinemaConsoleApp
                             HandleSeatReservation(title_lower);
                             break;
                         case "2":
+                            HandleCheckReservation(title_lower);
                             break;
                         case "3":
+                            WriteLine($"Thank you for visiting GIC Cinema. Ciao!");
                             leave = true;
                             break;
                     }
@@ -71,45 +73,98 @@ public class CinemaConsoleApp
             }
         }
     }
-    private void HandleSeatReservation(string title)
+    private void HandleCheckReservation(string title)
     {
         for (bool quit = false; !quit;)
         {
-            WriteLine("Enter #tickets to purchase. [ENTER to return to main menu]:");
+            WriteLine("Enter your reservation Id. [ENTER to return to main menu]:");
             Write("> ");
             string input = ReadLine();
             quit = string.IsNullOrEmpty(input);
             if (!quit)
             {
-                _logger.LogInformation($"{nameof(CinemaConsoleApp)} input: {input}");
-                int tickets = int.Parse(input.Trim());
-                if (tickets > 0 && tickets <= _cinema.SeatsAvailable(title))
+                _logger.LogInformation($"{nameof(HandleCheckReservation)} input: {input}");
+                List<List<char>> map = new List<List<char>>();
+                _cinema.ShowMap(title, input.Trim(), map);
+                WriteLine($"Reservation Id: {input.Trim()}");
+                WriteLine($"Selected seats:");
+                WriteLine();
+                WriteLine("---------- SCREEN ----------");
+                for (int i = map.Count - 1; i >= 0; i--)
                 {
-                    Reservation reservation = _cinema.Reserve(title, tickets);
-                    if (reservation != null && !string.IsNullOrEmpty(reservation.Id))
+                    for (int j = 0; j < map[i].Count; j++)
+                        Write(map[i][j] == ' ' ? '.' : map[i][j]);
+                    WriteLine();
+                }
+            }
+        }
+    }
+    private void HandleSeatReservation(string title)
+    {
+        int tickets = 0;
+        Reservation reservation = null;
+        for (bool quit = false; !quit;)
+        {
+            WriteLine("Enter #tickets to purchase. [ENTER to return to main menu]:");
+            Write("> ");
+            string input = ReadLine();
+            _logger.LogInformation($"{nameof(HandleSeatReservation)} input: {input}");
+            quit = string.IsNullOrEmpty(input);
+            if (!quit)
+            {
+                tickets = int.Parse(input.Trim());
+                if (tickets < 0 || tickets > _cinema.SeatsAvailable(title))
+                    WriteLine($"Only {_cinema.SeatsAvailable(title)} tickets available for '{title}'");
+                else
+                    quit = true;
+            }
+        }
+        for (bool quit = false; !quit;)
+        {
+            if (tickets > 0 && tickets <= _cinema.SeatsAvailable(title))
+            {
+                reservation = _cinema.Reserve(title, tickets);
+                if (reservation != null && !string.IsNullOrEmpty(reservation.Id))
+                {
+                    List<List<char>> map = new List<List<char>>();
+                    _cinema.ShowMap(title, reservation.Id, map);
+                    WriteLine($"Successfully reserved {tickets} {title} tickets!");
+                    WriteLine($"Reservation Id: {reservation.Id}");
+                    WriteLine($"Selected seats:");
+                    WriteLine();
+                    WriteLine("---------- SCREEN ----------");
+                    for (int i = map.Count - 1; i >= 0; i--)
                     {
-                        List<List<char>> map = new List<List<char>>();
-                        _cinema.ShowMap(title, reservation.Id, map);
-                        WriteLine($"Successfully reserved {tickets} {title} tickets!");
-                        WriteLine($"Reservation Id: {reservation.Id}");
-                        WriteLine($"Selected seats:");
+                        for (int j = 0; j < map[i].Count; j++)
+                            Write(map[i][j] == ' ' ? '.' : map[i][j]);
                         WriteLine();
-                        WriteLine("---------- SCREEN ----------");
-                        for (int i = map.Count - 1; i >= 0; i--)
+                    }
+                    WriteLine("[ENTER] to accept seat selection OR enter a new seating (One alphabet for row and 2 digits for seat in the row):");
+                    Write("> ");
+                    string input = ReadLine();
+                    if (string.IsNullOrEmpty(input))
+                    {
+                        if (_cinema.Confirm(title, reservation.Id))
                         {
-                            for (int j = 0; j < map[i].Count; j++)
-                                Write(map[i][j] == ' ' ? '.' : map[i][j]);
-                            WriteLine();
+                            WriteLine($"Your reservation {reservation.Id} is confirmed. Enjoy the movie!");
+                            quit = true;
                         }
-                        WriteLine("[ENTER] to accept seat selection OR enter a new seating (One alphabet for row and 2 digits for seat in the row):");
-                        Write("> ");
-                        input = ReadLine();
-                        quit = string.IsNullOrEmpty(input);
-                        if (!quit)
-                            ;
+                    }
+                    else
+                    {
+                        (int row, int seat) = ParseSeat(input.Trim());
+                        if (row >= 0 && seat >= 0)
+                        {
+                            _logger.LogInformation($"{nameof(HandleSeatReservation)} Reserving {tickets} from seat {input.Trim()} -> ({row},{seat})");
+                            reservation = _cinema.Reserve(title, tickets, row, seat);
+                        }
+                        else
+                            WriteLine($"Invalid seat selection {input.Trim()}. Rows start from 'A' and ends at {(char)('A' + rows - 1)}, seats starts from 1 and ends at {seats}");
                     }
                 }
             }
+            else
+                WriteLine($"Only {_cinema.SeatsAvailable(title)} tickets available for '{title}'");
         }
     }
     /// <summary>
@@ -117,7 +172,7 @@ public class CinemaConsoleApp
     /// </summary>
     /// <param name="seat"></param>
     /// <returns></returns>
-    private (int, int) ParseSeat(string seat, int rows, int seats)
+    private (int, int) ParseSeat(string seat)
     {
         int row = -1, col = -1; // _rows: [0, 25], _cols: [1, min(_seatsPerRow , 50)]
         MatchCollection matches = _regex.Matches(seat);
@@ -140,31 +195,5 @@ public class CinemaConsoleApp
             }
         }
         return (row, col > 0 ? col - 1 : col);
-    }
-    private void CheckReservation(string id)
-    {
-        try
-        {
-            if (!string.IsNullOrEmpty(id) && _reservations.ContainsKey(id))
-            {
-                WriteLine($"Reservation {id}: Seats: {_reservations[id].Seats}");
-            }
-            else
-                WriteLine($"{nameof(CheckReservation)} Invalid reservation id: {id}!");
-        }
-        catch (Exception e)
-        {
-            WriteLine($"Exception! {e}");
-        }
-    }
-    private void Reserve(int movie, int tickets, string seat)
-    {
-        try
-        {
-        }
-        catch (Exception e)
-        {
-            WriteLine($"Exception! {e}");
-        }
     }
 }
