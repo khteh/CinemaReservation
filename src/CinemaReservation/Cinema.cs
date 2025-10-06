@@ -27,6 +27,7 @@ public class Cinema
     /// <summary>
     /// Reserve tickets for movie "title", starting from (row, seat) using 0-based index.
     /// </summary>
+    /// <param name="id">Existing reservation id to change seats</param>
     /// <param name="title"></param>
     /// <param name="tickets"></param>
     /// <param name="row"></param>
@@ -34,7 +35,7 @@ public class Cinema
     /// <returns>Reservation</returns>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public Reservation Reserve(string title, int tickets, int row = -1, int seat = -1)
+    public Reservation Reserve(string id, string title, int tickets, int row = -1, int seat = -1)
     {
         title = title.Trim();
         string title_lower = title.ToLower();
@@ -46,7 +47,7 @@ public class Cinema
             _logger.LogError($"{nameof(Reserve)}: Not enough seats available!");
             return null;
         }
-        return _seatMap[title_lower].Reserve(tickets, row, seat);
+        return _seatMap[title_lower].Reserve(id, tickets, row, seat);
     }
     public bool Confirm(string title, string id)
     {

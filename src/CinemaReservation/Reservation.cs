@@ -12,6 +12,7 @@ public class Reservation : IDisposable
         _id = id;
         _seats = seats;
     }
+    public void UpdateSeats(Dictionary<int, List<int>> seats) => _seats = seats;
     public void Dispose()
     {
         _seats.Clear();

@@ -29,13 +29,14 @@ public class SeatMap : IDisposable
     /// <summary>
     /// Reserve tickets starting from (row, seat) using 0-based index.
     /// </summary>
+    /// <param name="id">Existing reservation id to change seats</param>
     /// <param name="tickets"></param>
     /// <param name="row"></param>
     /// <param name="seat"></param>
     /// <returns>Reservation</returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     /// <exception cref="InvalidOperationException"></exception>
-    public Reservation Reserve(int tickets, int row = -1, int seat = -1)
+    public Reservation Reserve(string id, int tickets, int row = -1, int seat = -1)
     {
         Reservation reservation = null;
         Dictionary<int, List<int>> seats = new Dictionary<int, List<int>>();
@@ -61,10 +62,18 @@ public class SeatMap : IDisposable
         tickets = _strategy.Allocate(row, tickets, _rows, seats);
         if (tickets > 0)
             throw new InvalidOperationException($"{nameof(Reserve)} Failed to reserve {tickets} remaining seats!");
-        string id = $"GIC{_runningCount.ToString("D4")}";
-        reservation = new Reservation(id, seats);
-        _reservations.Add(id, reservation);
-        Interlocked.Increment(ref _runningCount);
+        if (string.IsNullOrEmpty(id) || !_reservations.ContainsKey(id))
+        {
+            id = $"GIC{_runningCount.ToString("D4")}";
+            reservation = new Reservation(id, seats);
+            _reservations.Add(id, reservation);
+            Interlocked.Increment(ref _runningCount);
+        }
+        else
+        {
+            _reservations[id].UpdateSeats(seats);
+            reservation = _reservations[id];
+        }
         return reservation;
     }
     public bool ConfirmReservation(string id)

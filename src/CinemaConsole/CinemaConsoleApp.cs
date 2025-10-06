@@ -119,7 +119,7 @@ public class CinemaConsoleApp
         {
             if (tickets > 0 && tickets <= _cinema.SeatsAvailable(title))
             {
-                reservation = _cinema.Reserve(title, tickets);
+                reservation = _cinema.Reserve(string.Empty, title, tickets);
                 if (reservation != null && !string.IsNullOrEmpty(reservation.Id))
                 {
                     List<List<char>> map = new List<List<char>>();
@@ -152,7 +152,7 @@ public class CinemaConsoleApp
                         if (row >= 0 && seat >= 0)
                         {
                             _logger.LogInformation($"{nameof(HandleSeatReservation)} Reserving {tickets} from seat {input.Trim()} -> ({row},{seat})");
-                            reservation = _cinema.Reserve(title, tickets, row, seat);
+                            reservation = _cinema.Reserve(reservation.Id, title, tickets, row, seat);
                         }
                         else
                             WriteLine($"Invalid seat selection {input.Trim()}. Rows start from 'A' and ends at {(char)('A' + _rows - 1)}, seats starts from 1 and ends at {_seats}");

@@ -22,7 +22,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
 
         int seats = sm.SeatsAvailable();
         Assert.Equal(100, seats);
-        Reservation reservation = sm.Reserve(10);
+        Reservation reservation = sm.Reserve(string.Empty, 10);
         Assert.NotNull(reservation);
         seats = sm.SeatsAvailable();
         Assert.Equal(100, seats);
@@ -43,7 +43,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
 
         int seats = sm.SeatsAvailable();
         Assert.Equal(100, seats);
-        Reservation reservation = sm.Reserve(10);
+        Reservation reservation = sm.Reserve(string.Empty, 10);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         sm.ShowMap(reservation.Id, map);
@@ -67,7 +67,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         int _index = (int)_field.GetValue(rows[0]);
         Assert.Equal(-1, _index);
 
-        reservation = sm.Reserve(15);
+        reservation = sm.Reserve(string.Empty, 15);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         map.Clear();
@@ -111,7 +111,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         _index = (int)_field.GetValue(rows[2]);
         Assert.Equal(7, _index);
 
-        reservation = sm.Reserve(8);
+        reservation = sm.Reserve(string.Empty, 8);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         map.Clear();
@@ -159,7 +159,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         _index = (int)_field.GetValue(rows[3]);
         Assert.Equal(7, _index);
 
-        reservation = sm.Reserve(7);
+        reservation = sm.Reserve(string.Empty, 7);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         map.Clear();
@@ -226,7 +226,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
 
         int seats = sm.SeatsAvailable();
         Assert.Equal(100, seats);
-        Reservation reservation = sm.Reserve(10, 2, 3); // C04
+        Reservation reservation = sm.Reserve(string.Empty, 10, 2, 3); // C04
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         sm.ShowMap(reservation.Id, map);
@@ -265,7 +265,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         _index = (int)_field.GetValue(rows[3]);
         Assert.Equal(6, _index);
 
-        reservation = sm.Reserve(15, 1, 3); // B04
+        reservation = sm.Reserve(string.Empty, 15, 1, 3); // B04
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         map.Clear();
@@ -323,7 +323,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         _index = (int)_field.GetValue(rows[4]);
         Assert.Equal(5, _index);
 
-        reservation = sm.Reserve(13, 0, 3); // A04
+        reservation = sm.Reserve(string.Empty, 13, 0, 3); // A04
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         map.Clear();
@@ -377,7 +377,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         Assert.Equal(-1, _index);
 
         // Default Reservation
-        reservation = sm.Reserve(19);
+        reservation = sm.Reserve(string.Empty, 19);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         map.Clear();
@@ -446,5 +446,135 @@ public class SeatMapTests : IClassFixture<TestFixture>
         Assert.Equal(9, rows[6].AvailableSeats());
         _index = (int)_field.GetValue(rows[6]);
         Assert.Equal(5, _index);
+    }
+    [Fact]
+    public void ChangeExistingReservationSeatShouldPreserveIdTests()
+    {
+        SeatMap sm = (SeatMap)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatMap), new object[] { nameof(AvailableSeatCountTests), 10, 10 });
+        List<SeatRow> rows = (List<SeatRow>)_rowfield.GetValue(sm);
+        FieldInfo _field = typeof(SeatRow).GetField("_index", BindingFlags.Instance | BindingFlags.NonPublic);
+        List<List<char>> map = new List<List<char>>();
+
+        int seats = sm.SeatsAvailable();
+        Assert.Equal(100, seats);
+        Reservation reservation = sm.Reserve(string.Empty, 10);
+        Assert.NotNull(reservation);
+        //sm.ConfirmReservation(reservation.Id);
+        sm.ShowMap(reservation.Id, map);
+        Assert.Equal([['#', '#', '#', '#', '#', '#', '#', '#', '#', '#'], /* Row A*/
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ], map);
+        seats = sm.SeatsAvailable();
+        Assert.Equal(100, seats);
+        Assert.Equal("GIC0000", reservation.Id);
+        Assert.Equal(new Dictionary<int, List<int>>() { { 0, new List<int>() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } } }, reservation.Seats);
+        Assert.Equal(10, rows[0].AvailableSeats());
+        // Validate _index
+        int _index = (int)_field.GetValue(rows[0]);
+        Assert.Equal(0, _index);
+
+        reservation = sm.Reserve(reservation.Id, 15, 2, 3); // C04
+        Assert.NotNull(reservation);
+        //sm.ConfirmReservation(reservation.Id);
+        map.Clear();
+        sm.ShowMap(reservation.Id, map);
+        Assert.Equal([[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], /* Row A*/
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#'],
+            [' ', '#', '#', '#', '#', '#', '#', '#', '#', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ], map);
+        seats = sm.SeatsAvailable();
+        Assert.Equal(100, seats);
+        Assert.Equal("GIC0000", reservation.Id);
+        Assert.Equal(new Dictionary<int, List<int>>() {
+                         /*
+                            0 1 2 3 4 5 6 7 8 9
+                                  x x x x x x x
+                         */
+                         { 2, new List<int>(){3, 4, 5, 6, 7, 8, 9 } },
+                          /*
+                            0 1 2 3 4 5 6 7 8 9
+                              x x x x x x x x
+                          */
+                         { 3, new List<int>(){ 1, 2, 3, 4, 5, 6, 7, 8 } }
+                         }, reservation.Seats);
+        // Validate _index
+        Assert.Equal(10, rows[0].AvailableSeats());
+        _index = (int)_field.GetValue(rows[0]);
+        Assert.Equal(0, _index);
+
+        Assert.Equal(10, rows[1].AvailableSeats());
+        _index = (int)_field.GetValue(rows[1]);
+        Assert.Equal(0, _index);
+
+        Assert.Equal(10, rows[2].AvailableSeats());
+        _index = (int)_field.GetValue(rows[2]);
+        Assert.Equal(0, _index);
+
+        Assert.Equal(10, rows[3].AvailableSeats());
+        _index = (int)_field.GetValue(rows[3]);
+        Assert.Equal(0, _index);
+
+        reservation = sm.Reserve(reservation.Id, 15, 1, 3); // B04
+        Assert.NotNull(reservation);
+        //sm.ConfirmReservation(reservation.Id);
+        map.Clear();
+        sm.ShowMap(reservation.Id, map);
+        Assert.Equal([[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], /* Row A*/
+            [' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#'],
+            [' ', '#', '#', '#', '#', '#', '#', '#', '#', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ], map);
+        seats = sm.SeatsAvailable();
+        Assert.Equal(100, seats);
+        Assert.Equal("GIC0000", reservation.Id);
+        Assert.Equal(new Dictionary<int, List<int>>() {
+                         /*
+                            0 1 2 3 4 5 6 7 8 9
+                                  x x x x x x x
+                         */
+                         { 1, new List<int>(){3, 4, 5, 6, 7, 8, 9 } },
+                          /*
+                            0 1 2 3 4 5 6 7 8 9
+                              x x x x x x x x
+                          */
+                         { 2, new List<int>(){ 1, 2, 3, 4, 5, 6, 7, 8 } }
+                         }, reservation.Seats);
+        // Validate _index
+        Assert.Equal(10, rows[0].AvailableSeats());
+        _index = (int)_field.GetValue(rows[0]);
+        Assert.Equal(0, _index);
+
+        Assert.Equal(10, rows[1].AvailableSeats());
+        _index = (int)_field.GetValue(rows[1]);
+        Assert.Equal(0, _index);
+
+        Assert.Equal(10, rows[2].AvailableSeats());
+        _index = (int)_field.GetValue(rows[2]);
+        Assert.Equal(0, _index);
+
+        Assert.Equal(10, rows[3].AvailableSeats());
+        _index = (int)_field.GetValue(rows[3]);
+        Assert.Equal(0, _index);
     }
 }

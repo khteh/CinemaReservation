@@ -21,7 +21,7 @@ public class CinemaTests : IClassFixture<TestFixture>
     {
         Cinema cinema = (Cinema)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(Cinema));
         //act
-        Action act1 = () => cinema.Reserve(nameof(InvalidArgumentsShouldThrowTests), 10);
+        Action act1 = () => cinema.Reserve(string.Empty, nameof(InvalidArgumentsShouldThrowTests), 10);
         //assert
         InvalidOperationException invalidOperation = Assert.Throws<InvalidOperationException>(act1);
         //The thrown exception can be used for even more detailed assertions.
@@ -30,13 +30,13 @@ public class CinemaTests : IClassFixture<TestFixture>
         string title = "Sex and the City";
         cinema.CreateMovie(title, 10, 10);
         //act
-        Action act2 = () => cinema.Reserve(title.ToLower(), -1);
+        Action act2 = () => cinema.Reserve(string.Empty, title.ToLower(), -1);
         //assert
         ArgumentOutOfRangeException outofrange = Assert.Throws<ArgumentOutOfRangeException>(act2);
         //The thrown exception can be used for even more detailed assertions.
         Assert.Equal($"Specified argument was out of the range of valid values. (Parameter 'tickets')", outofrange.Message);
 
-        Reservation reservation = cinema.Reserve(title.ToLower(), 101);
+        Reservation reservation = cinema.Reserve(string.Empty, title.ToLower(), 101);
         Assert.Null(reservation);
     }
     [Fact]
@@ -49,13 +49,13 @@ public class CinemaTests : IClassFixture<TestFixture>
         Assert.NotNull(seatMap);
         Assert.True(seatMap.ContainsKey(title.ToLower()));
 
-        Reservation reservation = cinema.Reserve(title.ToLower(), 10);
+        Reservation reservation = cinema.Reserve(string.Empty, title.ToLower(), 10);
         Assert.NotNull(reservation);
         Assert.Equal("GIC0000", reservation.Id);
         Assert.Equal(new Dictionary<int, List<int>>() { { 0, new List<int>() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } } }, reservation.Seats);
         Assert.False(reservation.Confirmed);
 
-        reservation = cinema.Reserve(title.ToLower(), 15);
+        reservation = cinema.Reserve(string.Empty, title.ToLower(), 15);
         Assert.NotNull(reservation);
         Assert.Equal("GIC0001", reservation.Id);
         Assert.Equal(new Dictionary<int, List<int>>() {
@@ -82,14 +82,14 @@ public class CinemaTests : IClassFixture<TestFixture>
         Assert.NotNull(seatMap);
         Assert.True(seatMap.ContainsKey(title.ToLower()));
 
-        Reservation reservation = cinema.Reserve(title.ToLower(), 10);
+        Reservation reservation = cinema.Reserve(string.Empty, title.ToLower(), 10);
         Assert.NotNull(reservation);
         cinema.Confirm(title, reservation.Id);
         Assert.True(reservation.Confirmed);
         Assert.Equal("GIC0000", reservation.Id);
         Assert.Equal(new Dictionary<int, List<int>>() { { 0, new List<int>() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } } }, reservation.Seats);
 
-        reservation = cinema.Reserve(title.ToLower(), 15);
+        reservation = cinema.Reserve(string.Empty, title.ToLower(), 15);
         Assert.NotNull(reservation);
         cinema.Confirm(title, reservation.Id);
         Assert.True(reservation.Confirmed);
@@ -107,7 +107,7 @@ public class CinemaTests : IClassFixture<TestFixture>
                          { 2, new List<int>(){2, 3, 4, 5, 6 } },
                          }, reservation.Seats);
 
-        reservation = cinema.Reserve(title.ToLower(), 8);
+        reservation = cinema.Reserve(string.Empty, title.ToLower(), 8);
         Assert.NotNull(reservation);
         cinema.Confirm(title, reservation.Id);
         Assert.True(reservation.Confirmed);
@@ -125,7 +125,7 @@ public class CinemaTests : IClassFixture<TestFixture>
                          { 3, new List<int>(){2,3,4,5,6 } },
                          }, reservation.Seats);
 
-        reservation = cinema.Reserve(title.ToLower(), 7);
+        reservation = cinema.Reserve(string.Empty, title.ToLower(), 7);
         Assert.NotNull(reservation);
         cinema.Confirm(title, reservation.Id);
         Assert.True(reservation.Confirmed);
@@ -152,14 +152,13 @@ public class CinemaTests : IClassFixture<TestFixture>
     public void SpecificSeatReservationTests()
     {
         string title = "Mission Impossible - Death Reckoning";
-        //Cinema cinema = new Cinema(_logger, _strategy);
         Cinema cinema = (Cinema)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(Cinema));
         Dictionary<string, SeatMap> seatMap = (Dictionary<string, SeatMap>)_seatMapField.GetValue(cinema);
         cinema.CreateMovie(title, 10, 10);
         Assert.NotNull(seatMap);
         Assert.True(seatMap.ContainsKey(title.ToLower()));
 
-        Reservation reservation = cinema.Reserve(title.ToLower(), 10, 2, 3); // C04
+        Reservation reservation = cinema.Reserve(string.Empty, title.ToLower(), 10, 2, 3); // C04
         Assert.NotNull(reservation);
         cinema.Confirm(title, reservation.Id);
         Assert.True(reservation.Confirmed);
@@ -177,7 +176,7 @@ public class CinemaTests : IClassFixture<TestFixture>
                             { 3, new List<int>() { 3, 4, 5 } }
                         }, reservation.Seats);
 
-        reservation = cinema.Reserve(title.ToLower(), 15, 1, 3); // B04
+        reservation = cinema.Reserve(string.Empty, title.ToLower(), 15, 1, 3); // B04
         Assert.NotNull(reservation);
         cinema.Confirm(title, reservation.Id);
         Assert.True(reservation.Confirmed);
@@ -205,7 +204,7 @@ public class CinemaTests : IClassFixture<TestFixture>
                          { 4, new List<int>(){4 } },
                          }, reservation.Seats);
 
-        reservation = cinema.Reserve(title.ToLower(), 13, 0, 3); // A04
+        reservation = cinema.Reserve(string.Empty, title.ToLower(), 13, 0, 3); // A04
         Assert.NotNull(reservation);
         cinema.Confirm(title, reservation.Id);
         Assert.True(reservation.Confirmed);
@@ -229,7 +228,7 @@ public class CinemaTests : IClassFixture<TestFixture>
                          }, reservation.Seats);
 
         // Default Reservation
-        reservation = cinema.Reserve(title.ToLower(), 19);
+        reservation = cinema.Reserve(string.Empty, title.ToLower(), 19);
         Assert.NotNull(reservation);
         cinema.Confirm(title, reservation.Id);
         Assert.True(reservation.Confirmed);
@@ -255,6 +254,66 @@ public class CinemaTests : IClassFixture<TestFixture>
                                     x
                           */
                          { 6, new List<int>(){4 } },
+                         }, reservation.Seats);
+    }
+    [Fact]
+    public void ChangeExistingReservationSeatShouldPreserveIdTests()
+    {
+        string title = "Mission Impossible - Death Reckoning";
+        Cinema cinema = (Cinema)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(Cinema));
+        Dictionary<string, SeatMap> seatMap = (Dictionary<string, SeatMap>)_seatMapField.GetValue(cinema);
+        cinema.CreateMovie(title, 10, 10);
+        Assert.NotNull(seatMap);
+        Assert.True(seatMap.ContainsKey(title.ToLower()));
+
+        // Default Reservation
+        Reservation reservation = cinema.Reserve(string.Empty, title.ToLower(), 10);
+        Assert.NotNull(reservation);
+        cinema.Confirm(title, reservation.Id);
+        Assert.True(reservation.Confirmed);
+        Assert.Equal("GIC0000", reservation.Id);
+        Assert.Equal(new Dictionary<int, List<int>>() { 
+                         /*
+                            0 1 2 3 4 5 6 7 8 9
+                            x x x x x x x x x x
+                         */
+                            { 0, new List<int>() { 0,1,2,3, 4, 5, 6, 7, 8, 9 } }
+                        }, reservation.Seats);
+
+        reservation = cinema.Reserve(reservation.Id, title.ToLower(), 15, 2, 3); // C04
+        Assert.NotNull(reservation);
+        cinema.Confirm(title, reservation.Id);
+        Assert.True(reservation.Confirmed);
+        Assert.Equal("GIC0000", reservation.Id);
+        Assert.Equal(new Dictionary<int, List<int>>() {
+                         /*
+                            0 1 2 3 4 5 6 7 8 9
+                                  x x x x x x x
+                         */
+                         { 2, new List<int>(){3, 4, 5, 6, 7, 8, 9 } },
+                          /*
+                            0 1 2 3 4 5 6 7 8 9
+                              x x x x x x x x
+                          */
+                         { 3, new List<int>(){ 1, 2, 3, 4, 5, 6, 7, 8 } }
+                         }, reservation.Seats);
+
+        reservation = cinema.Reserve(reservation.Id, title.ToLower(), 15, 1, 3); // B04
+        Assert.NotNull(reservation);
+        cinema.Confirm(title, reservation.Id);
+        Assert.True(reservation.Confirmed);
+        Assert.Equal("GIC0000", reservation.Id);
+        Assert.Equal(new Dictionary<int, List<int>>() {
+                         /*
+                            0 1 2 3 4 5 6 7 8 9
+                                  x x x x x x x
+                         */
+                         { 1, new List<int>(){3, 4, 5, 6, 7, 8, 9 } },
+                          /*
+                            0 1 2 3 4 5 6 7 8 9
+                              x x x x x x x x
+                          */
+                         { 2, new List<int>(){ 1, 2, 3, 4, 5, 6, 7, 8 } }
                          }, reservation.Seats);
     }
 }
