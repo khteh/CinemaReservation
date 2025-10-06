@@ -67,11 +67,13 @@ public class SeatMap : IDisposable
             id = $"GIC{_runningCount.ToString("D4")}";
             reservation = new Reservation(id, seats);
             _reservations.Add(id, reservation);
+            _logger.LogInformation($"{nameof(Reserve)} New reservation {id}");
             Interlocked.Increment(ref _runningCount);
         }
         else
         {
             _reservations[id].UpdateSeats(seats);
+            _logger.LogInformation($"{nameof(Reserve)} Existing reservation {id}");
             reservation = _reservations[id];
         }
         return reservation;
@@ -89,10 +91,16 @@ public class SeatMap : IDisposable
         }
         return true;
     }
-    public void ShowMap(string id, List<List<char>> map)
+
+    public bool HasReservation(string id) => !string.IsNullOrEmpty(id) && _reservations.ContainsKey(id);
+
+    public bool ShowMap(string id, List<List<char>> map)
     {
-        if (string.IsNullOrEmpty(id) || !_reservations.ContainsKey(id)) throw new ArgumentOutOfRangeException(nameof(id));
-        if (!_reservations.ContainsKey(id.Trim())) throw new ArgumentOutOfRangeException(nameof(id));
+        if (string.IsNullOrEmpty(id) || !_reservations.ContainsKey(id))
+        {
+            _logger.LogWarning($"{nameof(ShowMap)} Invalid reservation id {id}!");
+            return false;
+        }
         Reservation reservation = _reservations[id.Trim()];
         for (int i = 0; i < _rows.Count; i++)
         {
@@ -101,6 +109,7 @@ public class SeatMap : IDisposable
                 if (reservation.Seats.ContainsKey(i) && reservation.Seats[i].Contains(j))
                     map[i][j] = '#';
         }
+        return true;
     }
     public void Dispose()
     {

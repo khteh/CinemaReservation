@@ -81,17 +81,21 @@ public class CinemaConsoleApp
             {
                 _logger.LogInformation($"{nameof(HandleCheckReservation)} input: {input}");
                 List<List<char>> map = new List<List<char>>();
-                _cinema.ShowMap(title, input.Trim(), map);
-                WriteLine($"Reservation Id: {input.Trim()}");
-                WriteLine($"Selected seats:");
-                WriteLine();
-                WriteLine("---------- SCREEN ----------");
-                for (int i = map.Count - 1; i >= 0; i--)
+                if (_cinema.ShowMap(title, input.Trim(), map))
                 {
-                    for (int j = 0; j < map[i].Count; j++)
-                        Write(map[i][j] == ' ' ? '.' : map[i][j]);
+                    WriteLine($"Reservation Id: {input.Trim()}");
+                    WriteLine($"Selected seats:");
                     WriteLine();
+                    WriteLine("---------- SCREEN ----------");
+                    for (int i = map.Count - 1; i >= 0; i--)
+                    {
+                        for (int j = 0; j < map[i].Count; j++)
+                            Write(map[i][j] == ' ' ? '.' : map[i][j]);
+                        WriteLine();
+                    }
                 }
+                else
+                    WriteLine($"Invalid reservation {input}!");
             }
         }
     }
@@ -119,7 +123,8 @@ public class CinemaConsoleApp
         {
             if (tickets > 0 && tickets <= _cinema.SeatsAvailable(title))
             {
-                reservation = _cinema.Reserve(string.Empty, title, tickets);
+                if (reservation == null)
+                    reservation = _cinema.Reserve(string.Empty, title, tickets);
                 if (reservation != null && !string.IsNullOrEmpty(reservation.Id))
                 {
                     List<List<char>> map = new List<List<char>>();
@@ -146,12 +151,12 @@ public class CinemaConsoleApp
                             quit = true;
                         }
                     }
-                    else
+                    else if (reservation != null && !string.IsNullOrEmpty(reservation.Id))
                     {
                         (int row, int seat) = ParseSeat(input.Trim());
                         if (row >= 0 && seat >= 0)
                         {
-                            _logger.LogInformation($"{nameof(HandleSeatReservation)} Reserving {tickets} from seat {input.Trim()} -> ({row},{seat})");
+                            _logger.LogInformation($"{nameof(HandleSeatReservation)} Reserving {reservation.Id} of {tickets} tickets from seat {input.Trim()} -> ({row},{seat})");
                             reservation = _cinema.Reserve(reservation.Id, title, tickets, row, seat);
                         }
                         else

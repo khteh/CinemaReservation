@@ -58,13 +58,11 @@ public class Cinema
             throw new InvalidOperationException($"Invalid movie title! {title}");
         return _seatMap[title_lower].ConfirmReservation(id);
     }
-    public void ShowMap(string title, string id, List<List<char>> map)
+    public bool ShowMap(string title, string id, List<List<char>> map)
     {
         string title_lower = title.Trim().ToLower();
         id = id.Trim();
         if (string.IsNullOrEmpty(title_lower)) throw new ArgumentNullException(nameof(title));
-        if (!_seatMap.ContainsKey(title_lower))
-            throw new InvalidOperationException($"Invalid movie title! {title}");
-        _seatMap[title_lower].ShowMap(id, map);
+        return _seatMap.ContainsKey(title_lower) && _seatMap[title_lower].HasReservation(id) && _seatMap[title_lower].ShowMap(id, map);
     }
 }
