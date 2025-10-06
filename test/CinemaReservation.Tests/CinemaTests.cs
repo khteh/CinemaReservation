@@ -54,6 +54,7 @@ public class CinemaTests : IClassFixture<TestFixture>
       Assert.Equal("GIC0000", reservation.Id);
       Assert.Equal(new Dictionary<int, List<int>>() { { 0, new List<int>() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } } }, reservation.Seats);
       Assert.False(reservation.Confirmed);
+      Assert.Equal(100, cinema.SeatsAvailable(title.ToLower()));
 
       reservation = cinema.Reserve(string.Empty, title.ToLower(), 15);
       Assert.NotNull(reservation);
@@ -71,6 +72,7 @@ public class CinemaTests : IClassFixture<TestFixture>
                          { 1, new List<int>(){2, 3, 4, 5, 6 } },
                          }, reservation.Seats);
       Assert.False(reservation.Confirmed);
+      Assert.Equal(100, cinema.SeatsAvailable(title.ToLower()));
    }
    [Fact]
    public void DefaultSeatReservationTests()
@@ -87,6 +89,7 @@ public class CinemaTests : IClassFixture<TestFixture>
       cinema.Confirm(title, reservation.Id);
       Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0000", reservation.Id);
+      Assert.Equal(90, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() { { 0, new List<int>() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } } }, reservation.Seats);
 
       reservation = cinema.Reserve(string.Empty, title.ToLower(), 15);
@@ -94,6 +97,7 @@ public class CinemaTests : IClassFixture<TestFixture>
       cinema.Confirm(title, reservation.Id);
       Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0001", reservation.Id);
+      Assert.Equal(75, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() {
                          /*
                             0 1 2 3 4 5 6 7 8 9
@@ -112,6 +116,7 @@ public class CinemaTests : IClassFixture<TestFixture>
       cinema.Confirm(title, reservation.Id);
       Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0002", reservation.Id);
+      Assert.Equal(67, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() {
                          /*
                             0 1 2 3 4 5 6 7 8 9
@@ -130,6 +135,7 @@ public class CinemaTests : IClassFixture<TestFixture>
       cinema.Confirm(title, reservation.Id);
       Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0003", reservation.Id);
+      Assert.Equal(60, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() {
                          /*
                             0 1 2 3 4 5 6 7 8 9
@@ -163,6 +169,7 @@ public class CinemaTests : IClassFixture<TestFixture>
       cinema.Confirm(title, reservation.Id);
       Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0000", reservation.Id);
+      Assert.Equal(90, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() { 
                          /*
                             0 1 2 3 4 5 6 7 8 9
@@ -181,6 +188,7 @@ public class CinemaTests : IClassFixture<TestFixture>
       cinema.Confirm(title, reservation.Id);
       Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0001", reservation.Id);
+      Assert.Equal(75, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() {
                          /*
                             0 1 2 3 4 5 6 7 8 9
@@ -209,6 +217,7 @@ public class CinemaTests : IClassFixture<TestFixture>
       cinema.Confirm(title, reservation.Id);
       Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0002", reservation.Id);
+      Assert.Equal(62, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() {
                          /*
                             0 1 2 3 4 5 6 7 8 9
@@ -233,6 +242,7 @@ public class CinemaTests : IClassFixture<TestFixture>
       cinema.Confirm(title, reservation.Id);
       Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0003", reservation.Id);
+      Assert.Equal(43, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() {
                          /*
                             0 1 2 3 4 5 6 7 8 9
@@ -269,9 +279,8 @@ public class CinemaTests : IClassFixture<TestFixture>
       // Default Reservation
       Reservation reservation = cinema.Reserve(string.Empty, title.ToLower(), 10);
       Assert.NotNull(reservation);
-      cinema.Confirm(title, reservation.Id);
-      Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0000", reservation.Id);
+      Assert.Equal(100, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() { 
                          /*
                             0 1 2 3 4 5 6 7 8 9
@@ -282,9 +291,8 @@ public class CinemaTests : IClassFixture<TestFixture>
 
       reservation = cinema.Reserve(reservation.Id, title.ToLower(), 15, 2, 3); // C04
       Assert.NotNull(reservation);
-      cinema.Confirm(title, reservation.Id);
-      Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0000", reservation.Id);
+      Assert.Equal(100, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() {
                          /*
                             0 1 2 3 4 5 6 7 8 9
@@ -300,9 +308,8 @@ public class CinemaTests : IClassFixture<TestFixture>
 
       reservation = cinema.Reserve(reservation.Id, title.ToLower(), 15, 1, 3); // B04
       Assert.NotNull(reservation);
-      cinema.Confirm(title, reservation.Id);
-      Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0000", reservation.Id);
+      Assert.Equal(100, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() {
                          /*
                             0 1 2 3 4 5 6 7 8 9
@@ -315,6 +322,9 @@ public class CinemaTests : IClassFixture<TestFixture>
                           */
                          { 2, new List<int>(){ 1, 2, 3, 4, 5, 6, 7, 8 } }
                          }, reservation.Seats);
+      cinema.Confirm(title, reservation.Id);
+      Assert.True(reservation.Confirmed);
+      Assert.Equal(85, cinema.SeatsAvailable(title.ToLower()));
    }
    [Fact]
    public void OverlappingSeatReservationTests()
@@ -331,6 +341,7 @@ public class CinemaTests : IClassFixture<TestFixture>
       cinema.Confirm(title, reservation.Id);
       Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0000", reservation.Id);
+      Assert.Equal(90, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() { 
                          /*
                             0 1 2 3 4 5 6 7 8 9
@@ -344,11 +355,12 @@ public class CinemaTests : IClassFixture<TestFixture>
                             { 3, new List<int>() { 3, 4, 5 } }
                         }, reservation.Seats);
 
-      reservation = cinema.Reserve(string.Empty, title.ToLower(), 10, 3, 1); // D03
+      reservation = cinema.Reserve(string.Empty, title.ToLower(), 10, 3, 1); // D02
       Assert.NotNull(reservation);
       cinema.Confirm(title, reservation.Id);
       Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0001", reservation.Id);
+      Assert.Equal(80, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() {
                           /*
                             0 1 2 3 4 5 6 7 8 9
@@ -367,6 +379,7 @@ public class CinemaTests : IClassFixture<TestFixture>
       cinema.Confirm(title, reservation.Id);
       Assert.True(reservation.Confirmed);
       Assert.Equal("GIC0002", reservation.Id);
+      Assert.Equal(70, cinema.SeatsAvailable(title.ToLower()));
       Assert.Equal(new Dictionary<int, List<int>>() {
                           /*
                             0 1 2 3 4 5 6 7 8 9
