@@ -1,13 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Text.RegularExpressions;
 namespace CinemaReservation;
 
 public class SeatMap : IDisposable
 {
-    private readonly Regex _regex = new Regex(@"^([a-zA-Z]{1})([0-9]{2})$");
     private readonly string _title;
-    private int _seatsPerRow;
     private int _runningCount = 0;
     private List<SeatRow> _rows;
     private Dictionary<string, Reservation> _reservations;
@@ -24,10 +21,18 @@ public class SeatMap : IDisposable
         _reservations = new Dictionary<string, Reservation>();
         for (int i = 0; i < rows; i++)
             _rows.Add((SeatRow)ActivatorUtilities.CreateInstance(serviceProvider, typeof(SeatRow), new object[] { seats }));
-        _seatsPerRow = _rows.Any() ? _rows.First().Seats.Count : 0;
     }
     public int SeatsAvailable() => _rows.AsParallel().Sum(r => r.AvailableSeats());
-    public Reservation Reserve(int tickets, string seat)
+    /// <summary>
+    /// Reserve tickets starting from (row, seat) using 0-based index.
+    /// </summary>
+    /// <param name="tickets"></param>
+    /// <param name="row"></param>
+    /// <param name="seat"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <exception cref="InvalidOperationException"></exception>
+    public Reservation Reserve(int tickets, int row = -1, int seat = -1)
     {
         Reservation reservation = null;
         Dictionary<int, List<int>> seats = new Dictionary<int, List<int>>();
@@ -37,14 +42,10 @@ public class SeatMap : IDisposable
             _logger.LogError($"{nameof(Reserve)}: Not enough seats available!");
             return reservation;
         }
-        int row = -1, col = -1;
-        if (!string.IsNullOrEmpty(seat))
+        if (row >= 0 && seat >= 0)
         {
-            (row, col) = ParseSeat(seat);
-            if (row < 0 || col < 1)
-                throw new ArgumentOutOfRangeException(nameof(seat));
-            _logger.LogDebug($"{nameof(Reserve)} Reserving {tickets} seats from ({row}, {col - 1})");
-            List<int> reserved = _rows[row].Reserve(col - 1, tickets);
+            _logger.LogDebug($"{nameof(Reserve)} Reserving {tickets} seats from ({row}, {seat})");
+            List<int> reserved = _rows[row].Reserve(seat, tickets);
             if (reserved.Any())
             {
                 tickets -= reserved.Count;
@@ -87,35 +88,6 @@ public class SeatMap : IDisposable
             reservation.Confirmed = true;
         }
         return true;
-    }
-    /// <summary>
-    /// Parse the input seat request string to it's corresponding row: [0, 25], cols: [1, min(_seatsPerRow , 50)]
-    /// </summary>
-    /// <param name="seat"></param>
-    /// <returns></returns>
-    private (int, int) ParseSeat(string seat)
-    {
-        int row = -1, col = -1; // _rows: [0, 25], _cols: [1, min(_seatsPerRow , 50)]
-        MatchCollection matches = _regex.Matches(seat);
-        _logger.LogDebug($"{matches.Count} matches");
-        if (matches.Count > 0)
-        {
-            /* Report on each match.
-             * If a match is found, information about this part of the matching string can be retrieved from the second Group object in the GroupCollection object returned by the Match.Groups property. 
-             * The first element in the collection represents the entire match.
-             */
-            int _row = matches[0].Groups[1].Value.ToLower()[0] - 'a';
-            if (Int32.TryParse(matches[0].Groups[2].Value, out int _col))
-            {
-                _logger.LogDebug($"{nameof(ParseSeat)} row: {_row}/{_rows.Count}, col: {_col}/{int.Min(_seatsPerRow, 50)}");
-                if (_row >= 0 && _row < int.Min(_rows.Count, 26) && _col >= 1 && _col <= int.Min(_seatsPerRow, 50))
-                {
-                    row = _row;
-                    col = _col;
-                }
-            }
-        }
-        return (row, col);
     }
     public void ShowMap(string id, List<List<char>> map)
     {

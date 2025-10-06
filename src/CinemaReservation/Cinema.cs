@@ -24,11 +24,10 @@ public class Cinema
         return _seatMap[title].SeatsAvailable();
     }
     public int SeatsAvailable(string title) => _seatMap.ContainsKey(title) ? _seatMap[title].SeatsAvailable() : 0;
-    public Reservation Reserve(string title, int tickets, string seat)
+    public Reservation Reserve(string title, int tickets, int row = -1, int seat = -1)
     {
         title = title.Trim();
         string title_lower = title.ToLower();
-        seat = seat.Trim().ToLower();
         if (!_seatMap.ContainsKey(title_lower))
             throw new InvalidOperationException($"Invalid movie title! {title}");
         if (tickets <= 0) throw new ArgumentOutOfRangeException(nameof(tickets));
@@ -37,7 +36,7 @@ public class Cinema
             _logger.LogError($"{nameof(Reserve)}: Not enough seats available!");
             return null;
         }
-        return _seatMap[title_lower].Reserve(tickets, seat);
+        return _seatMap[title_lower].Reserve(tickets, row, seat);
     }
     public bool Confirm(string title, string id)
     {

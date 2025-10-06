@@ -13,25 +13,6 @@ public class SeatMapTests : IClassFixture<TestFixture>
         SeatMap sm = (SeatMap)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatMap), new object[] { nameof(AvailableSeatCountTests), 10, 10 });
         Assert.Equal(100, sm.SeatsAvailable());
     }
-    [Theory]
-    [InlineData("A05", 0, 5)]
-    [InlineData("AB05", -1, -1)]
-    [InlineData("A123", -1, -1)]
-    [InlineData("AB123", -1, -1)]
-    [InlineData("J10", 9, 10)]
-    [InlineData("K05", -1, -1)] // row should be <= J (10)
-    [InlineData("E00", -1, -1)] // col should be >= 1
-    [InlineData("E05", 4, 5)]
-    [InlineData("E11", -1, -1)] // col should be <= 10
-    public void ParseSeatTests(string str, int row, int seat)
-    {
-        SeatMap sm = (SeatMap)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatMap), new object[] { nameof(AvailableSeatCountTests), 10, 10 });
-        MethodInfo _parseSeat = sm.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(x => x.Name == "ParseSeat" && x.IsPrivate).First();
-        Assert.NotNull(_parseSeat);
-        (int row, int col) result = ((int row, int col))_parseSeat.Invoke(sm, new object[] { str });
-        Assert.Equal(row, result.row);
-        Assert.Equal(seat, result.col);
-    }
     [Fact]
     public void ReservationWithoutConfirmationTests()
     {
@@ -41,7 +22,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
 
         int seats = sm.SeatsAvailable();
         Assert.Equal(100, seats);
-        Reservation reservation = sm.Reserve(10, string.Empty);
+        Reservation reservation = sm.Reserve(10);
         Assert.NotNull(reservation);
         seats = sm.SeatsAvailable();
         Assert.Equal(100, seats);
@@ -62,7 +43,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
 
         int seats = sm.SeatsAvailable();
         Assert.Equal(100, seats);
-        Reservation reservation = sm.Reserve(10, string.Empty);
+        Reservation reservation = sm.Reserve(10);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         sm.ShowMap(reservation.Id, map);
@@ -86,7 +67,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         int _index = (int)_field.GetValue(rows[0]);
         Assert.Equal(-1, _index);
 
-        reservation = sm.Reserve(15, string.Empty);
+        reservation = sm.Reserve(15);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         map.Clear();
@@ -130,7 +111,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         _index = (int)_field.GetValue(rows[2]);
         Assert.Equal(7, _index);
 
-        reservation = sm.Reserve(8, string.Empty);
+        reservation = sm.Reserve(8);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         map.Clear();
@@ -178,7 +159,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         _index = (int)_field.GetValue(rows[3]);
         Assert.Equal(7, _index);
 
-        reservation = sm.Reserve(7, string.Empty);
+        reservation = sm.Reserve(7);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         map.Clear();
@@ -245,7 +226,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
 
         int seats = sm.SeatsAvailable();
         Assert.Equal(100, seats);
-        Reservation reservation = sm.Reserve(10, "C04");
+        Reservation reservation = sm.Reserve(10, 2, 3); // C04
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         sm.ShowMap(reservation.Id, map);
@@ -284,7 +265,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         _index = (int)_field.GetValue(rows[3]);
         Assert.Equal(6, _index);
 
-        reservation = sm.Reserve(15, "B04");
+        reservation = sm.Reserve(15, 1, 3); // B04
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         map.Clear();
@@ -342,7 +323,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         _index = (int)_field.GetValue(rows[4]);
         Assert.Equal(5, _index);
 
-        reservation = sm.Reserve(13, "A04");
+        reservation = sm.Reserve(13, 0, 3); // A04
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         map.Clear();
@@ -396,7 +377,7 @@ public class SeatMapTests : IClassFixture<TestFixture>
         Assert.Equal(-1, _index);
 
         // Default Reservation
-        reservation = sm.Reserve(19, string.Empty);
+        reservation = sm.Reserve(19);
         Assert.NotNull(reservation);
         sm.ConfirmReservation(reservation.Id);
         map.Clear();

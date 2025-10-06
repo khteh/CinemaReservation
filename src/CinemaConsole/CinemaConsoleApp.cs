@@ -85,7 +85,7 @@ public class CinemaConsoleApp
                 int tickets = int.Parse(input.Trim());
                 if (tickets > 0 && tickets <= _cinema.SeatsAvailable(title))
                 {
-                    Reservation reservation = _cinema.Reserve(title, tickets, string.Empty);
+                    Reservation reservation = _cinema.Reserve(title, tickets);
                     if (reservation != null && !string.IsNullOrEmpty(reservation.Id))
                     {
                         List<List<char>> map = new List<List<char>>();
@@ -112,13 +112,12 @@ public class CinemaConsoleApp
             }
         }
     }
-#if false
     /// <summary>
     /// Parse the input seat request string to it's corresponding row: [0, 25], cols: [1, min(_seatsPerRow , 50)]
     /// </summary>
     /// <param name="seat"></param>
     /// <returns></returns>
-    private (int, int) ParseSeat(string seat)
+    private (int, int) ParseSeat(string seat, int rows, int seats)
     {
         int row = -1, col = -1; // _rows: [0, 25], _cols: [1, min(_seatsPerRow , 50)]
         MatchCollection matches = _regex.Matches(seat);
@@ -132,17 +131,16 @@ public class CinemaConsoleApp
             int _row = matches[0].Groups[1].Value.ToLower()[0] - 'a';
             if (Int32.TryParse(matches[0].Groups[2].Value, out int _col))
             {
-                _logger.LogDebug($"{nameof(ParseSeat)} row: {_row}/{_rows.Count}, col: {_col}/{int.Min(_seatsPerRow, 50)}");
-                if (_row >= 0 && _row < int.Min(_rows.Count, 26) && _col >= 1 && _col <= int.Min(_seatsPerRow, 50))
+                _logger.LogDebug($"{nameof(ParseSeat)} row: {_row}/{rows}, col: {_col}/{int.Min(seats, 50)}");
+                if (_row >= 0 && _row < int.Min(rows, 26) && _col >= 1 && _col <= int.Min(seats, 50))
                 {
                     row = _row;
                     col = _col;
                 }
             }
         }
-        return (row, col);
+        return (row, col > 0 ? col - 1 : col);
     }
-#endif
     private void CheckReservation(string id)
     {
         try
