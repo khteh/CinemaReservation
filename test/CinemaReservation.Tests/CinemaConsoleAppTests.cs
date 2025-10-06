@@ -5,6 +5,8 @@ namespace CinemaReservation.Tests;
 public class CinemaConsoleAppTests : IClassFixture<TestFixture>
 {
     private readonly IServiceProvider _serviceProvider;
+    private FieldInfo _rowsfield = typeof(CinemaConsoleApp).GetField("_rows", BindingFlags.Instance | BindingFlags.NonPublic);
+    private FieldInfo _seatsfield = typeof(CinemaConsoleApp).GetField("_seats", BindingFlags.Instance | BindingFlags.NonPublic);
     public CinemaConsoleAppTests(TestFixture testFixture) => _serviceProvider = testFixture.Host.Services;
     [Theory]
     [InlineData("A05", 0, 4)]
@@ -18,11 +20,13 @@ public class CinemaConsoleAppTests : IClassFixture<TestFixture>
     [InlineData("E11", -1, -1)] // col should be <= 10
     public void ParseSeatTests(string str, int row, int seat)
     {
-        CinemaConsoleApp sm = (CinemaConsoleApp)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(CinemaConsoleApp));
-        MethodInfo _parseSeat = sm.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(x => x.Name == "ParseSeat" && x.IsPrivate).First();
+        CinemaConsoleApp cinema = (CinemaConsoleApp)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(CinemaConsoleApp));
+        _rowsfield.SetValue(cinema, 10);
+        _seatsfield.SetValue(cinema, 10);
+        MethodInfo _parseSeat = cinema.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(x => x.Name == "ParseSeat" && x.IsPrivate).First();
         Assert.NotNull(_parseSeat);
         // private (int, int) ParseSeat(string seat, int rows, int seats)
-        (int row, int col) result = ((int row, int col))_parseSeat.Invoke(sm, new object[] { str, 10, 10 });
+        (int row, int col) result = ((int row, int col))_parseSeat.Invoke(cinema, new object[] { str });
         Assert.Equal(row, result.row);
         Assert.Equal(seat, result.col);
     }

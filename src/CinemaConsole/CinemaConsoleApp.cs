@@ -1,5 +1,4 @@
 ﻿using CinemaReservation;
-using CinemaReservation.Strategies;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 using static System.Console;
@@ -8,15 +7,12 @@ namespace CinemaConsole;
 public class CinemaConsoleApp
 {
     private Cinema _cinema;
-    private readonly ISeatAllocationStrategy _strategy;
-    private Dictionary<string, Reservation> _reservations = new Dictionary<string, Reservation>();
     private readonly ILogger<CinemaConsoleApp> _logger;
     private readonly Regex _regex = new Regex(@"^([a-zA-Z]{1})([0-9]{2})$");
-    private int rows = -1, seats = -1;
-    public CinemaConsoleApp(ISeatAllocationStrategy strategy, ILogger<CinemaConsoleApp> logger, Cinema cinema)
+    private int _rows = -1, _seats = -1;
+    public CinemaConsoleApp(ILogger<CinemaConsoleApp> logger, Cinema cinema)
     {
         _logger = logger;
-        _strategy = strategy;
         _cinema = cinema;
     }
     public void Run(string[] args)
@@ -26,7 +22,7 @@ public class CinemaConsoleApp
         bool movieCreated = false;
         while (!leave)
         {
-            if (string.IsNullOrEmpty(title) || rows < 0 || seats < 0 || !movieCreated)
+            if (string.IsNullOrEmpty(title) || _rows < 0 || _seats < 0 || !movieCreated)
             {
                 WriteLine($"Please define movie title and seat map in [Title] [Rows] [SeatsPerRow] format:");
                 Write("> ");
@@ -36,12 +32,12 @@ public class CinemaConsoleApp
                     string[] values = input.Split(' ');
                     title = values[0].Trim();
                     title_lower = title.ToLower();
-                    rows = int.Parse(values[1].Trim());
-                    seats = int.Parse(values[2].Trim());
+                    _rows = int.Parse(values[1].Trim());
+                    _seats = int.Parse(values[2].Trim());
                 }
-                if (!string.IsNullOrEmpty(title) && rows > 0 && rows <= 26 && seats > 0 && seats <= 50)
+                if (!string.IsNullOrEmpty(title) && _rows > 0 && _rows <= 26 && _seats > 0 && _seats <= 50)
                 {
-                    _cinema.CreateMovie(title_lower, rows, seats);
+                    _cinema.CreateMovie(title_lower, _rows, _seats);
                     movieCreated = true;
                 }
             }
@@ -159,7 +155,7 @@ public class CinemaConsoleApp
                             reservation = _cinema.Reserve(title, tickets, row, seat);
                         }
                         else
-                            WriteLine($"Invalid seat selection {input.Trim()}. Rows start from 'A' and ends at {(char)('A' + rows - 1)}, seats starts from 1 and ends at {seats}");
+                            WriteLine($"Invalid seat selection {input.Trim()}. Rows start from 'A' and ends at {(char)('A' + _rows - 1)}, seats starts from 1 and ends at {_seats}");
                     }
                 }
             }
@@ -186,8 +182,8 @@ public class CinemaConsoleApp
             int _row = matches[0].Groups[1].Value.ToLower()[0] - 'a';
             if (Int32.TryParse(matches[0].Groups[2].Value, out int _col))
             {
-                _logger.LogDebug($"{nameof(ParseSeat)} row: {_row}/{rows}, col: {_col}/{int.Min(seats, 50)}");
-                if (_row >= 0 && _row < int.Min(rows, 26) && _col >= 1 && _col <= int.Min(seats, 50))
+                _logger.LogDebug($"{nameof(ParseSeat)} row: {_row}/{_rows}, col: {_col}/{int.Min(_seats, 50)}");
+                if (_row >= 0 && _row < int.Min(_rows, 26) && _col >= 1 && _col <= int.Min(_seats, 50))
                 {
                     row = _row;
                     col = _col;
