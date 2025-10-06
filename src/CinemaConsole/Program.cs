@@ -12,10 +12,8 @@ public partial class Program
     {
         try
         {
-            var app = CreateHostBuilder(args)
-                .Build();
-            app.Services.GetRequiredService<CinemaConsoleApp>() // Resolve your main application class
-               .Run(args); // Execute your application logic
+            var app = CreateHostBuilder(args).Build();
+            app.Services.GetRequiredService<CinemaConsoleApp>().Run(args);
             return 0;
         }
         catch (Exception e)
@@ -40,8 +38,8 @@ public partial class Program
             {
                 services.AddTransient<ISeatAllocationStrategy, MiddleToRightStrategy>();
                 services.AddTransient<IRowAllocationStrategy, BackRowAllocationStrategy>();
-                services.AddTransient<Cinema>(); // Register your main application class
-                services.AddSingleton<CinemaConsoleApp>(); // Register your main application class
+                services.AddTransient<Cinema>();
+                services.AddSingleton<CinemaConsoleApp>();
             })
             .UseSerilog((ctx, svc, config) => config.ReadFrom.Configuration(ctx.Configuration).ReadFrom.Services(svc).Enrich.FromLogContext());
     }
