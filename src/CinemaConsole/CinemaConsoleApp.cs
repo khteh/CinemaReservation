@@ -87,12 +87,18 @@ public class CinemaConsoleApp
                     WriteLine($"Selected seats:");
                     WriteLine();
                     WriteLine("---------- SCREEN ----------");
-                    for (int i = map.Count - 1; i >= 0; i--)
+                    char rowLabel = (char)('A' + _rows - 1);
+                    for (int i = map.Count - 1; i >= 0; i--, rowLabel--)
                     {
+                        Write($"\t{rowLabel} ");
                         for (int j = 0; j < map[i].Count; j++)
                             Write(map[i][j] == ' ' ? '.' : map[i][j]);
                         WriteLine();
                     }
+                    Write("\t  ");
+                    for (int j = 1; j <= map.First().Count; j++)
+                        Write((j > 0 && (j % 10) == 0) ? 0 : j);
+                    WriteLine();
                 }
                 else
                     WriteLine($"Invalid reservation {input}!");
@@ -134,12 +140,18 @@ public class CinemaConsoleApp
                     WriteLine($"Selected seats:");
                     WriteLine();
                     WriteLine("---------- SCREEN ----------");
-                    for (int i = map.Count - 1; i >= 0; i--)
+                    char rowLabel = (char)('A' + _rows - 1);
+                    for (int i = map.Count - 1; i >= 0; i--, rowLabel--)
                     {
+                        Write($"\t{rowLabel} ");
                         for (int j = 0; j < map[i].Count; j++)
                             Write(map[i][j] == ' ' ? '.' : map[i][j]);
                         WriteLine();
                     }
+                    Write("\t  ");
+                    for (int j = 1; j <= map.First().Count; j++)
+                        Write((j > 0 && (j % 10) == 0) ? 0 : j);
+                    WriteLine();
                     WriteLine("[ENTER] to accept seat selection OR enter a new seating (One alphabet for row and 2 digits for seat in the row):");
                     Write("> ");
                     string input = ReadLine();
