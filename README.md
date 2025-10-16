@@ -1,6 +1,6 @@
 # Cinema Reservation System
 
-An ASP.NET 9.0 console application for cinema movie tickets reservation and management.
+An .NET 9.0 console application for cinema movie tickets reservation and management.
 
 ## Class Diagram
 
