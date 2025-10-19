@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.RegularExpressions;
 namespace CinemaReservation.Tests;
 
@@ -6,15 +5,11 @@ public class SeatRegexTests : IClassFixture<TestFixture>
 {
     private readonly ITestOutputHelper _output;
     private readonly Regex _regex = new Regex(@"^([a-zA-Z]{1})([0-9]{2})$");
-    private readonly SeatMap _seatMap;
     private readonly IServiceProvider _serviceProvider;
-    private FieldInfo _field = typeof(SeatMap).GetField("_seatsPerRow", BindingFlags.Instance | BindingFlags.NonPublic);
-    private FieldInfo _rowsField = typeof(SeatMap).GetField("_rows", BindingFlags.Instance | BindingFlags.NonPublic);
     public SeatRegexTests(ITestOutputHelper output, TestFixture testFixture)
     {
         _output = output;
         _serviceProvider = testFixture.Host.Services;
-        _seatMap = (SeatMap)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(SeatMap), new object[] { nameof(SeatRegexTests), 10, 10 });
     }
     [Theory]
     [InlineData(1, "A05", 0, 5)]
