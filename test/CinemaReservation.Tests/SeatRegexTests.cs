@@ -5,12 +5,7 @@ public class SeatRegexTests : IClassFixture<TestFixture>
 {
     private readonly ITestOutputHelper _output;
     private readonly Regex _regex = new Regex(@"^([a-zA-Z]{1})([0-9]{2})$");
-    private readonly IServiceProvider _serviceProvider;
-    public SeatRegexTests(ITestOutputHelper output, TestFixture testFixture)
-    {
-        _output = output;
-        _serviceProvider = testFixture.Host.Services;
-    }
+    public SeatRegexTests(ITestOutputHelper output, TestFixture testFixture) => _output = output;
     [Theory]
     [InlineData(1, "A05", 0, 5)]
     [InlineData(0, "AB05", -1, -1)]
