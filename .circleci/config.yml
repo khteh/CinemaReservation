@@ -18,7 +18,7 @@ jobs:
       - checkout:
           method: full
       - run: dotnet restore
-      - run: dotnet build -c Release --no-restore -a x64 --os linux /p:Version=9.0 --version-suffix $CIRCLE_BUILD_NUM
+      - run: dotnet build -c Release --no-restore /p:Version=9.0 --version-suffix $CIRCLE_BUILD_NUM
       - run: dotnet test -c Release --no-restore --no-build test/CinemaReservation.Tests
       - run: dotnet publish -c Release --no-restore -a x64 --os linux --no-build src/CinemaConsole
       - setup_remote_docker:
