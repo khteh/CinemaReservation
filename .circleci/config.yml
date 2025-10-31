@@ -28,7 +28,7 @@ jobs:
       - run:
           name: Extract FileVersion from published binary
           command: |
-            exiftool src/CinemaConsole/bin/Release/net9.0/linux-x64/publish/CinemaConsole | grep "File Version" | awk -F":" '{ print $2 }' | xargs echo -n > version.txt
+            exiftool src/CinemaConsole/bin/Release/net9.0/linux-x64/publish/CinemaConsole.dll | grep "File Version" | awk -F":" '{ print $2 }' | xargs echo -n > version.txt
       - run:
           name: Build docker image
           command: |
