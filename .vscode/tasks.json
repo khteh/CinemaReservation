@@ -47,7 +47,11 @@
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary",
                 "-c",
-                "Release"
+                "Release",
+                "-a",
+                "x64",
+                "--os",
+                "linux"
             ],
             "problemMatcher": "$msCompile"
         },
@@ -71,7 +75,11 @@
                 "publish",
                 "${workspaceFolder}/src/CinemaConsole/CinemaConsole.csproj",
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
+                "/consoleloggerparameters:NoSummary",
+                "-a",
+                "x64",
+                "--os",
+                "linux"
             ],
             "problemMatcher": "$msCompile"
         },
