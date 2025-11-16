@@ -18,7 +18,7 @@ jobs:
       - checkout:
           method: full
       - run: dotnet restore
-      - run: dotnet build -c Release --no-restore /p:Version=9.0 --version-suffix $CIRCLE_BUILD_NUM
+      - run: dotnet build -c Release --no-restore /p:Version=10.0 --version-suffix $CIRCLE_BUILD_NUM
       - run: dotnet test -c Release --no-restore --no-build test/CinemaReservation.Tests
       - run: dotnet publish -c Release -a x64 --os linux src/CinemaConsole
       - setup_remote_docker:
@@ -28,7 +28,7 @@ jobs:
       - run:
           name: Extract FileVersion from published binary
           command: |
-            exiftool src/CinemaConsole/bin/Release/net9.0/linux-x64/publish/CinemaConsole.dll | grep "File Version" | awk -F":" '{ print $2 }' | xargs echo -n > version.txt
+            exiftool src/CinemaConsole/bin/Release/net10.0/linux-x64/publish/CinemaConsole.dll | grep "File Version" | awk -F":" '{ print $2 }' | xargs echo -n > version.txt
       - run:
           name: Build docker image
           command: |
