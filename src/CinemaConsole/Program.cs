@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using static System.Console;
 namespace CinemaConsole;
+
 public partial class Program
 {
     private static async Task<int> Main(string[] args)
@@ -25,6 +26,7 @@ public partial class Program
     internal static IHostBuilder CreateHostBuilder(string[] args)
     {
         string contentRootFull = Path.GetFullPath(Directory.GetCurrentDirectory());
+        // $ DOTNET_ENVIRONMENT="Development" ./Console
         string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Development";
         return Host.CreateDefaultBuilder(args)
             .ConfigureAppConfiguration(cfg =>
