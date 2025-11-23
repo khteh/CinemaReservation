@@ -18,9 +18,9 @@ jobs:
       - checkout:
           method: full
       - run: dotnet restore
-      - run: dotnet build -c Release --no-restore /p:Version=10.0 --version-suffix $CIRCLE_BUILD_NUM
+      - run: dotnet build -c Release --no-restore -a x64 --os linux /p:Version=10.0 --version-suffix $CIRCLE_BUILD_NUM
       - run: dotnet test -c Release --no-restore --no-build test/CinemaReservation.Tests
-      - run: dotnet publish -c Release --no-restore --no-build -a x64 --os linux src/CinemaConsole
+      - run: dotnet publish -c Release --no-restore --no-build src/CinemaConsole
       - setup_remote_docker:
           docker_layer_caching: true
       # use a primary image that already has Docker (recommended)
