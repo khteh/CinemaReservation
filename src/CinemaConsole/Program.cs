@@ -33,7 +33,7 @@ public partial class Program
             {
                 cfg.SetBasePath(contentRootFull);
                 cfg.AddJsonFile("appsettings.json", false, true);
-                //cfg.AddJsonFile($"appsettings.{environment}.json", false, true);
+                cfg.AddJsonFile($"appsettings.{environment}.json", false, true);
                 cfg.AddEnvironmentVariables().Build();
             })
             .ConfigureServices((hostContext, services) =>
