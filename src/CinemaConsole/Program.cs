@@ -26,14 +26,14 @@ public partial class Program
     internal static IHostBuilder CreateHostBuilder(string[] args)
     {
         string contentRootFull = Path.GetFullPath(Directory.GetCurrentDirectory());
-        // $ DOTNET_ENVIRONMENT=Development ./Console
+        // $ DOTNET_ENVIRONMENT=Development ./CinemaConsole
         string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Development";
         return Host.CreateDefaultBuilder(args)
             .ConfigureAppConfiguration(cfg =>
             {
                 cfg.SetBasePath(contentRootFull);
                 cfg.AddJsonFile("appsettings.json", false, true);
-                //cfg.AddJsonFile($"appsettings.{environment}.json", false, true);
+                cfg.AddJsonFile($"appsettings.{environment}.json", false, true);
                 cfg.AddEnvironmentVariables().Build();
             })
             .ConfigureServices((hostContext, services) =>
