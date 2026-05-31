@@ -1,0 +1,5 @@
+﻿<Solution>
+  <Project Path="src\CinemaReservation\CinemaReservation.csproj" />
+  <Project Path="test\CinemaReservation.Tests\CinemaReservation.Tests.csproj"/>
+  <Project Path="src\CinemaConsole\CinemaConsole.csproj" />
+</Solution>
