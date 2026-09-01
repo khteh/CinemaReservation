@@ -28,7 +28,7 @@ jobs:
           method: full
       - run: dotnet restore
       - run: dotnet build -c Release --no-restore /p:Version=10.0 --version-suffix $CIRCLE_BUILD_NUM
-      - run: dotnet test -c Release --no-restore --no-build test/CinemaReservation.Tests
+      - run: dotnet test -c Release --no-restore --no-build --project test/CinemaReservation.Tests/CinemaReservation.Tests.csproj
       - run: dotnet publish -c Release /p:Version=10.0 --version-suffix $CIRCLE_BUILD_NUM -a x64 --os linux src/CinemaConsole
       - setup_remote_docker:
           docker_layer_caching: true
